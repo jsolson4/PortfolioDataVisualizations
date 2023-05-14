@@ -1,0 +1,5 @@
+ HOW TO LAUNCH/RUN LOCAL HOST IN PYTHON:
+
+1) Open a terminal in VS code
+2) RUN: python3 -m http.server
+3) In Chrome web browser, go to localhost:8000. You should see the directory listing from the directory that you launched the http.server command in
