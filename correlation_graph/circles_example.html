@@ -1,0 +1,17 @@
+const nodes = [ {id: ABC, group: 1, level: 1}, {id:XYZ, group: 2, level: 1}, ]
+
+const nodeElems = svg.append('g')
+.selectAll('circle')
+.data(nodes)
+.enter().append('circle')
+.attr('r',radius)
+.attr('fill', getNodeColor)
+
+const textElems = svg.append('g')
+.selectAll('text')
+.data(nodes)
+.enter().append('text')
+.text(node => node.label)
+.attr('font-size',8)//font size
+.attr('dx', -10)//positions text towards the left of the center of the circle
+.attr('dy',4)
