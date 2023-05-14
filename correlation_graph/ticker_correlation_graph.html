@@ -1,0 +1,310 @@
+
+<meta charset="utf-8">
+
+<!-- Class style sheet in linked in .css -->
+<link rel = "stylesheet" href = "ticker_styles.css">
+
+<!-- Load d3.js-->
+<svg width = "960" height = "600"></svg>
+
+<script src="https://unpkg.com/d3-force-boundary@0.0.1/dist/d3-force-boundary.min.js"></script>
+<script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/d3-force-boundary@0.0.1/dist/d3-force-boundary.min.js"></script>
+<!-- // Tutorial Link: https://www.youtube.com/watch?v=y2-sgZh49dQ -->
+
+<!-- Set title (correct placement?)-->
+<title> Alpha Theory Ticker Graph</title>
+
+<!-- Create a div where the graph will take place -->
+//<div id = "network_graph"></div>
+
+<script>
+
+var margin = {top: 10, right: 30, bottom: 30, left:40},
+    width = 960 - margin.left - margin.right,
+    height = 600 - margin.top - margin.bottom;
+
+var svg = d3.select("svg") // select the svg element
+    .attr("width", width) // and assign width and height attributes
+    .attr("height", height);
+
+var corr_filter_min = 0.85
+
+d3.dsv(',', 'ticker_corr2.csv', function(d) {
+    if (d.Correlation >= corr_filter_min) {
+        //console.log(d)
+      return {
+          source: d.source,
+          target: d.target,
+          value: +d.Correlation
+        }     
+    }
+}).then(function(data) {
+
+var links = data;
+
+var nodes = [
+              { name: 'GBDC', Correlation: 0.393 }, 
+              { name: 'POLY.L', Correlation: 0.721 }, 
+              { name: 'PSDN', Correlation:0.854 }, 
+              { name: 'SKF.AX', Correlation:0.597 }, 
+              { name: 'SSSS', Correlation:0.695 }, 
+              { name: 'TEK.AX', Correlation: 0.784 },
+              { name: 'VRNOF', Correlation: 0.712 }];
+
+function corrFilter(row, corr_filter_min) {
+    if (row.Correlation >= corr_filter_min) {
+        return row
+    }
+}
+
+// ** Create a filter that checks that both nodes for a link are in the (updated) node set **//
+console.log(nodes)
+
+nodes.filter(corrFilter)
+
+var graph = {'nodes':nodes, 'links':links}
+
+console.log(d3.forceSimulation)
+
+// comment out to get things working
+// define force //
+//var force = d3.forceSimulation(node)
+    // .nodes(graph.nodes)
+    // .links(graph.links)
+    // .size([width, height])
+    // .linkDistance(60)
+    // .charge(-300)
+    // .on("tick", tick)
+    // .start();
+
+
+const n = 20
+
+var simulation = d3.forceSimulation(graph.nodes)
+    .force("link", d3.forceLink(graph.links).distance(300)
+        .id( function(d){
+              return d.name;
+            })
+    )
+    //.force("bounds", boxingForce)
+    .force("charge", d3.forceManyBody().strength(-100))
+    .force("center", d3.forceCenter(width / 2, height / 2))
+    .force("boundary", forceBoundary(-(width-n)/2,
+                                          -(height-n)/2,
+                                         (width-n)/2,
+                                         (height -n)/2
+                                         )
+            .hardBoundary(false))
+
+
+    .alphaDecay(0.0002) 
+    .on("tick", tick)
+    
+
+
+// Custom force to put all nodes in a box
+// function boxingForce() {
+//     const radius = 450;
+
+//     for (let node of nodes) {
+//         // Of the positions exceed the box, set them to the boundary position.
+//         // You may want to include your nodes width to not overlap with the box.
+//         node.x = Math.max(-radius, Math.min(radius, node.x));
+//         node.y = Math.max(-radius, Math.min(radius, node.y));
+//     }
+// }
+
+
+// Create scales for node size, link size, and node color gradient //
+var nodeScale = d3.scaleSqrt()
+                    .domain([0, d3.max(nodes, function(d) 
+                                                { return d.Correlation;})])
+                    .range([5, 40])
+                    .nice();  // can make range a function of the height / width
+                    
+
+var linkScale = d3.scaleLinear()
+                    .domain([d3.min(graph.links, function(d) { return d.value}),
+                             d3.max(graph.links, function(d) { return d.value})])
+                    .range([5, 20])
+                    .nice();
+
+
+//// note: converting "line" to path because I think I need to use a path definition to add the curves
+var link = svg  // find the svg element 
+            .append("g") // append "g" elements
+            .selectAll("path") // look inside for any "line"s
+            .data(graph.links) // bind the graph.links data to a selection (does in order received)
+            .enter() // D3 puts any leftover data into the enter section
+            .append("path")  // add a line for each element in the in the enter section
+            .attr("class", "link") // assign these lines to have the link class
+            .style("stroke-width", function(d) {  // stroke width is scaled according to the correlation value 'value'
+                   return linkScale(d.value);
+             })
+             //.attr("stroke", "grey")
+            //.style("fill", function(d){return "grey"})
+            .style("stroke", function(d){return "grey"})
+            
+            // .style("stroke", function (d) {
+            // if (d.value == 0) {
+            //     return "#6b6f72";
+            // }});
+
+
+var node = svg.append("g")
+          .selectAll("circle")
+          .data(graph.nodes)
+          .enter()
+          .append("circle")
+          .attr("id", function (d) {
+            return (d.name);})
+          .attr("class", "node")
+          .attr("r",function(d) {
+              return nodeScale(d.Correlation)
+          })
+          .call(d3.drag()
+          .on("start", function(event, d){
+            circle = d3.select(this);
+
+            //if circle.attr("id")
+                //if (d3.event.target !== null) 
+                {
+                    //force.alphaTarget(0.3).restart();
+                    d.fx = d.x;
+                    d.fy = d.y;
+                    }
+                })  
+          
+            //.on("start", dragStarted)
+            .on(".drag", dragged)
+            .on("end", dragEnded)
+        )
+        .on("dblclick", doubleClick); // d3 refers to the double click event as "dblclick"
+          
+          ;
+          //.call(force.drag);  // comment out call to fix
+
+   // add the node labels
+   ///// understand the append select all process again //// 
+  
+
+   
+// add the node labels
+labels = node.append("text")
+        .selectAll("text")
+        .data(graph.nodes)
+        .enter()
+        .append("text")
+    .text(function (d) {
+        return d.name;
+    })
+    .style("font-size", 6)
+    .style("font-weight", 1)
+    .style("text-anchor", "middle")
+    .attr("fill", "white")
+    .attr("dx", 0)
+    .attr("dy", 0);
+
+
+// working on calculating degree
+// d3.selectAll("g.node").each(function (d) 
+//   { // initialize degree value of zero
+//         d.fixed = false
+//         d.degree = 0;
+//     });
+
+// graph.links.forEach(function (d) {
+//     d.source.degree += 1;
+//     d.target.degree += 1;
+// });
+
+// Access node values and get min/max
+// var degreeMin = d3.min(graph.nodes, function (d) { return d.degree; });
+// var degreeMax = d3.max(graph.nodes, function (d) { return d.degree; })
+var degreeMin = d3.min(graph.nodes, function (d) { return d.Correlation; });
+var degreeMax = d3.max(graph.nodes, function (d) { return d.Correlation; })
+var colorGradient = d3.scaleLinear().domain([degreeMin, degreeMax]).range(['#003466', '#327FB9']) 
+// original gradient: ['#bcffba', '#58bc82']; at gradient: '#0C5E9B', '#D9D9D9'
+
+
+// Add color gradient to node fill
+node.attr("fill", function(d){
+            return colorGradient(d.Correlation)
+          });
+
+//// Functions ////
+function linkArc(d) {
+    var dx = d.target.x - d.source.x,
+        dy = d.target.y - d.source.y,
+        dr = Math.sqrt(dx * dx + dy * dy);
+    return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+}
+
+function transform(d) {
+  return "translate(" + d.x + "," + d.y + ")";
+}
+
+function tick() {
+    link.attr("d", linkArc);
+    node.attr("transform", transform);
+    node.selectAll("text").attr("transform", transform)
+    }
+
+
+    function dragStart(d) {
+      {
+        simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+        }
+    };
+
+
+    function dragged(event, d) {
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+    };
+
+    function dragEnded(event, d) {
+        // if node has been dragged, activate pin response
+        //if (!d3.event.active) 
+        simulation.alphaTarget(0);
+        d.fixed = true;
+        tick();
+
+        d.fx = d.x;
+        d.fy = d.y;
+
+        // if d is selected, change color. 
+        if (d.fixed == true) {
+            d3.select(this)
+            .select("circle")
+            .style("fill", "#D72862")
+        }
+
+    };
+
+// Add nodeFreeze on drag
+function doubleClick(event, d) {
+    /// When doubleClick is called, it should un-fix/unpin a node and restore the node color///
+        simulation.alphaTarget(0.3).restart();
+
+        // unfix position
+        d.fixed = false
+        d.fx = null
+        d.fy = null
+
+        // change color
+        d3.select(this)
+          .select("circle")
+          .style("fill", colorGradient(d.value))
+    };
+
+
+// Close data function and catch error if it exists
+}).catch(function(error) {
+        console.log(error);
+});
+
+</script>
