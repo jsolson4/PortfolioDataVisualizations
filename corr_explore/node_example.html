@@ -117,16 +117,16 @@ function ticked() {
 }
 
 
-    function dragStart(d, event) {
+    function dragStart(event, d) {
       {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
+        if (!event.active) simulation.alphaTarget(d.radius/100).restart();
         d.fx = d.x;
         d.fy = d.y;
         }
     };
 
 
-    function dragged(d, event) {
+    function dragged(event, d) {
       d.fx = event.x;
       d.fy = event.y;
     };
