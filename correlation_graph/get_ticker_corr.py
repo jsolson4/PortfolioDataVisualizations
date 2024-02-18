@@ -92,7 +92,7 @@ df["oneway"] = df.apply(lambda x: not df[
 df = df[df['oneway'] == True].drop("oneway", axis = 1)
 
 # normalize correlation
-df["norm_corr"] = (df["Correlation"] - df["Correlation"].mean()) / df["Correlation"].std()
+df["norm_corr"] = ((df["Correlation"] - df["Correlation"].mean()) / df["Correlation"].std()).round(3)
 
 print(df)
 
