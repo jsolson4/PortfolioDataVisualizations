@@ -82,12 +82,19 @@ df = pd.DataFrame(df)
 df.columns = ['source', 'target', 'Correlation']
 df = df[df['Correlation'] != 1]
 
+
+
 df = df.drop_duplicates()
 
 df["oneway"] = df.apply(lambda x: not df[
                     (df["source"] == x["target"]) & (df["target"] == x["source"]) & (df.index != x.name)].empty,axis=1)
 
 df = df[df['oneway'] == True].drop("oneway", axis = 1)
+
+# normalize correlation
+df["norm_corr"] = ((df["Correlation"] - df["Correlation"].mean()) / df["Correlation"].std()).round(3)
+
+print(df)
 
 df.to_csv("ticker_corr2.csv", index = False)
 
