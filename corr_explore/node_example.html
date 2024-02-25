@@ -35,22 +35,22 @@ var svg = d3.select("svg");
 var width = svg.attr("width");
 var height = svg.attr("height");
 
-var graphData = {
-    nodes: [{name: "A", radius:30}, {name: "B",radius:20}, {name: "C",radius:50}, {name: "D",radius:10},
-            {name: "AA", radius:15}, {name: "BB",radius:10}, {name: "CC",radius:25}, {name: "DD",radius:5}],
-    links:[
-        {source:"A", target:"B", corr:0.5},
-        {source:"A", target:"C", corr:0.3},
-        {source:"A", target:"D", corr:0.2},
-        {source:"B", target:"A", corr:0.9},
-        {source:"B", target:"C", corr:0.8},
-        {source:"B", target:"D", corr:0.7},
-        {source:"D", target:"C", corr:0.1},
-        {source:"A", target:"BB", corr:0.1},
-        {source:"B", target:"CC", corr:0.1},
-        {source:"D", target:"CC", corr:0.1},
-    ]
-};
+// var graphData = {
+//     nodes: [{name: "A", radius:30}, {name: "B",radius:20}, {name: "C",radius:50}, {name: "D",radius:10},
+//             {name: "AA", radius:15}, {name: "BB",radius:10}, {name: "CC",radius:25}, {name: "DD",radius:5}],
+//     links:[
+//         {source:"A", target:"B", corr:0.5},
+//         {source:"A", target:"C", corr:0.3},
+//         {source:"A", target:"D", corr:0.2},
+//         {source:"B", target:"A", corr:0.9},
+//         {source:"B", target:"C", corr:0.8},
+//         {source:"B", target:"D", corr:0.7},
+//         {source:"D", target:"C", corr:0.1},
+//         {source:"A", target:"BB", corr:0.1},
+//         {source:"B", target:"CC", corr:0.1},
+//         {source:"D", target:"CC", corr:0.1},
+//     ]
+// };
 
 
 d3.dsv(',', 'data/ticker_corr2.csv', function(d) {
@@ -66,9 +66,7 @@ d3.dsv(',', 'data/ticker_corr2.csv', function(d) {
 }).then(function(data) {
 
 var links = data;
-
-console.log(links)
-
+console.log("links:", links)
 var nodes = [
               { name: 'GBDC', group:'Credit', Correlation: 0.393 }, 
               { name: 'POLY.L', group :'Mining', Correlation: 0.721 }, 
@@ -96,6 +94,7 @@ var simulation = d3
             })
             .strength(0.7))
 
+            
         .on("tick", ticked);
 
 var links = svg
@@ -156,7 +155,7 @@ function ticked() {
         return d.target.y;
     });
 
-    console.log(simulation.alpha());
+   // console.log(simulation.alpha());
 }
 
 
@@ -188,6 +187,33 @@ function ticked() {
         }
 
     };
+
+// work on node-specific forces
+for (let i in graphData.links){
+    let l = graphData.links[i]
+    console.log("link:", l, l.source)
+    console.log("test access of nodes:", graphData.nodes.find(node => graphData.nodes.name === l.source).id)
+    
+    simulation.force(graphData.nodes[l.source])
+}
+
+// ##### ORIGINAL EXAMPLE ######
+// data.nodes contains all nodes
+for(let i = 0; i < graphData.nodes.length - 1; i++){
+    for(let j = i + 1; j < graphData.nodes.length; j++){
+        console.log("i", i, "j", j)
+        simulation.force(graphData.nodes[i].id.concat(graphData.nodes[j].id), 
+                         isolate(d3.forceManyBodyReuse().strength(-30), graphData.nodes[i], graphData.nodes[j]));
+    }
+}
+
+function isolate(force, nodeA, nodeB) {
+    let initialize = force.initialize;
+    force.initialize = function() { initialize.call(force, [nodeA, nodeB]); };
+    return force;
+}
+
+
 
     // Close data function and catch error if it exists
 }).catch(function(error) {

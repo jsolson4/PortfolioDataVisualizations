@@ -1,0 +1,93 @@
+
+<meta charset="utf-8">
+
+<!-- Class style sheet in linked in .css -->
+<link rel="stylesheet" href = "ticker_styles.css" type="text/css"/>
+
+<script src="https://unpkg.com/d3-force-boundary@0.0.1/dist/d3-force-boundary.min.js"></script>
+<script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/d3-force-boundary@0.0.1/dist/d3-force-boundary.min.js"></script>
+<!-- // Tutorial Link: https://www.youtube.com/watch?v=y2-sgZh49dQ -->
+
+<!-- Set title (correct placement?)-->
+<title>Corr Explore</title>
+
+<!-- Create left hand column-->
+<!-- Left Quarter Column -->
+<div class="left-column">
+    <div class="left-column-content">
+        <!-- Content for the left column goes here -->
+        <h2>Corr Explore</h2>
+        <p><i>This is an exciting new way to visualize portfolio correlation.</i></p>
+    </div>
+</div>
+<div class="right-column">
+<!-- <svg width = "960" height = "950"></svg> -->
+<svg width="900" height = "900"></svg>
+</div>
+
+
+<!-- Create a div where the graph will take place -->
+<div id = "bubble_container"></div>
+<script>
+
+var svg = d3.select("svg");
+var width = svg.attr("width");
+var height = svg.attr("height");
+
+// Sample data for nodes and links with correlation values
+var nodes = [
+    { id: 'SSSS' },
+    { id: 'AYR' },
+    { id: 'VRNOF' },
+    { id: 'GBDC' }
+];
+
+var links = [
+    { source: 'SSSS', target: 'AYR', correlation: 0.8 },
+    { source: 'AYR', target: 'VRNOF', correlation: 0.6 },
+    { source: 'AYR', target: 'GBDC', correlation: 0.7 }
+];
+
+// Create a new force simulation
+var simulation = d3.forceSimulation(nodes)
+    .force('charge', d3.forceManyBody().strength(-100)) // Repulsion force between nodes
+    .force('link', d3.forceLink().id(d => d.id)) // Link force
+    .force('center', d3.forceCenter(width / 2, height / 2)); // Centering force
+
+// Custom force to attract nodes based on correlation
+function attractByCorrelation() {
+    for (var i = 0; i < nodes.length; i++) {
+        for (var j = i + 1; j < nodes.length; j++) {
+            var node1 = nodes[i];
+            var node2 = nodes[j];
+            var link = links.find(link => (link.source === node1.id && link.target === node2.id) || (link.source === node2.id && link.target === node1.id));
+            if (link) {
+                var distance = Math.abs(link.correlation) * 100; // Scale correlation to set distance
+                var xDist = node2.x - node1.x;
+                var yDist = node2.y - node1.y;
+                var distanceBetweenNodes = Math.sqrt(xDist * xDist + yDist * yDist);
+                var xForce = xDist / distanceBetweenNodes * distance;
+                var yForce = yDist / distanceBetweenNodes * distance;
+                node1.vx += xForce;
+                node1.vy += yForce;
+                node2.vx -= xForce;
+                node2.vy -= yForce;
+            }
+        }
+    }
+}
+
+// Add the tick event to update positions
+simulation.on('tick', function() {
+    attractByCorrelation(); // Apply custom force
+    link.attr('x1', d => d.source.x)
+        .attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x)
+        .attr('y2', d => d.target.y);
+    node.attr('cx', d => d.x)
+        .attr('cy', d => d.y);
+});
+
+
+</script>
