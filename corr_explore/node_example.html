@@ -23,6 +23,7 @@
 
 <!-- Create a div where the graph will take place -->
 <div class="right-column">
+
 <svg id = "graph-container" width="800" height = "800"></svg>
 
 <script>
@@ -74,6 +75,7 @@ console.log("center width:", centerWidth, "center height:", centerHeight)
 //             .strength(0.7))
 //         .on("tick", ticked);
 
+// render issue was due to setting strength on forceCenter too high
 var simulation = d3
         .forceSimulation(graphData.nodes)
         .force("charge", d3.forceManyBody().strength(5))
