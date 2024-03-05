@@ -6,6 +6,7 @@
 
 <script src="https://unpkg.com/d3-force-boundary@0.0.1/dist/d3-force-boundary.min.js"></script>
 <script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+<script src="user_interactions.js"></script>
 <!-- // Tutorial Link: https://www.youtube.com/watch?v=y2-sgZh49dQ -->
 
 <!-- Set title (correct placement?)-->
@@ -23,14 +24,28 @@
     </div>
 
     <div class="slidecontainer">
-        <input type="range" min="0" max="1" value="0.5" 
+        <input type="range" min="0" max="1" value="0.0" 
             step = "0.01" class="slider" id="corrRange">
             
+<!-- Display the selected value -->
+<p>Selected Value: <span id="corrMinValue">0.0</span></p>
+
+<script>
+  // Add an event listener to the range slider
+  const rangeSlider = document.getElementById("corrRange");
+  const corrMinimumDisplay = document.getElementById("corrMinValue");
+
+  rangeSlider.addEventListener("input", function() {
+    const corrMinValue = +this.value; // Convert the value to a number
+    corrMinimumDisplay.textContent = corrMinValue;
+  }
+);
+
+</script>
+
 <script>var slider = document.getElementById("corrRange")
 console.log(slider, slider.value)
 ;</script>
-
-        <P>Current Value: <span id = "sliderValue">slider.value</span></P>
       </div>
 </div>
 
@@ -141,48 +156,6 @@ function ticked() {
     // console.log(simulation.alpha());
 };
 
-function dragStart(event, d) {
-      {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
-        d.fx = d.x;
-        d.fy = d.y;
-        }
-    };
-
-
-function dragged(event, d) {
-    d.fx = event.x;
-    d.fy = event.y;
-};
-
-function dragEnded(event, d) {
-    // if node has been dragged, activate pin response
-    if (event.active) simulation.alphaTarget(0);
-    d.fx = null;
-    d.fy = null;
-
-    // if d is selected, change color. 
-    if (d.fixed == true) {
-        d3.select(this)
-        .select("circle")
-        .style("fill", "#D72862")
-    }
-};
-
-function clicked(event, d) {
-        var circle = d3.select(this).select("circle");
-        // Check if the node is already selected (red fill color)
-        var isSelected = circle.attr("fill") === "#D72862";
-
-        // Toggle node color
-        if (isSelected) {
-            // If already selected, turn it off
-            circle.attr("fill", "steelblue");
-        } else {
-            // If not selected, turn it on
-            circle.attr("fill", "#D72862");
-        }
-};
 
 // define strength scale
 // var strengthScale = d3.scaleLinear([d3.min(graphData.links, function(d) {return d.value;}),
