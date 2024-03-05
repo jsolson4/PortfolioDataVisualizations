@@ -37,7 +37,7 @@ var svg = d3.select("svg") // select the svg element
 
 var corr_filter_min = 0.0
 
-d3.dsv(',', 'ticker_corr2.csv', function(d) {
+d3.dsv(',', 'data/ticker_corr2.csv', function(d) {
     if (d.Correlation >= corr_filter_min) {
         console.log(d.source, d.target, d.Correlation)
       return {

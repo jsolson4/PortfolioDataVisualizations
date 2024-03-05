@@ -1,0 +1,7 @@
+node_example_failing contains the current project status with the reference error.
+Try reverting to the old version of node_example and running to see what the issue is.
+
+Update: node issue was caused due to the center force being set too high (5 or greater).
+Have decreased the center force but the issue still persists when the strength is increased.
+
+Currently working on building out the filters in the left column of the page.

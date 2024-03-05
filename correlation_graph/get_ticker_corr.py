@@ -43,7 +43,7 @@ def build_frame(
     tickers:list,
     period:str = '2y',
     interval:str = '1d',
-    verbose: bool() = False
+    verbose:bool = False
     ):
 
     results = pd.DataFrame()
@@ -81,7 +81,6 @@ df = df.stack().reset_index()
 df = pd.DataFrame(df)
 df.columns = ['source', 'target', 'Correlation']
 df = df[df['Correlation'] != 1]
-
 
 
 df = df.drop_duplicates()
