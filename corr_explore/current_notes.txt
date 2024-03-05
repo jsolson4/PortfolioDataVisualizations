@@ -5,3 +5,7 @@ Update: node issue was caused due to the center force being set too high (5 or g
 Have decreased the center force but the issue still persists when the strength is increased.
 
 Currently working on building out the filters in the left column of the page.
+Specifically, working on the range slider and getting the filter to work.
+Additionally, I recently moved some functions to user_interactions.js. Some functions contain
+a reference to the simulation, so I am not sure it's fitting to keep them in a separate file.
+They are currently generating errors in the console. 
