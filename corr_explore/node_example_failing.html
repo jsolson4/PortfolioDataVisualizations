@@ -1,0 +1,245 @@
+
+<meta charset="utf-8">
+
+<!-- Class style sheet in linked in .css -->
+<link rel="stylesheet" href = "ticker_styles.css" type="text/css"/>
+
+<script src="https://unpkg.com/d3-force-boundary@0.0.1/dist/d3-force-boundary.min.js"></script>
+<script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/d3-force-boundary@0.0.1/dist/d3-force-boundary.min.js"></script>
+<!-- // Tutorial Link: https://www.youtube.com/watch?v=y2-sgZh49dQ -->
+
+<!-- Set title (correct placement?)-->
+<title>Corr Explore</title>
+
+<!-- Create left hand column-->
+<!-- Left Quarter Column -->
+<div class="left-column">
+    <div class="left-column-content">
+        <!-- Content for the left column goes here -->
+        <h2>Corr Explore</h2>
+        <p><i>This is an exciting new way to visualize portfolio correlation.</i></p>
+    </div>
+</div>
+<div class="right-column">
+<!-- <svg width = "960" height = "950"></svg> -->
+<svg width="900" height = "900"></svg>
+</div>
+
+
+<!-- Create a div where the graph will take place -->
+<div id = "bubble_container"></div>
+<script>
+
+var svg = d3.select("svg");
+var width = svg.attr("width");
+var height = svg.attr("height");
+
+
+d3.dsv(',', 'data/ticker_corr2.csv', function(d) {
+    //if (d.Correlation >= corr_filter_min) {
+    console.log(d.source, d.target, d.Correlation, d.norm_corr)
+      return {
+          source: d.source,
+          target: d.target,
+          correlation: +d.Correlation,
+          value: isNaN(d.norm_corr) ? 0 : +d.norm_corr,
+        }     
+    //}
+}).then(function(data) {
+
+var links = data;
+console.log("links:", links)
+var nodes = [
+              { name: 'GBDC', group:'Credit', Correlation: 0.393 }, 
+              { name: 'POLY.L', group :'Mining', Correlation: 0.721 }, 
+              { name: 'PSDN', group:'Cannabis', Correlation:0.854 }, 
+              { name: 'SKF.AX', group:'Technology', Correlation:0.597 }, 
+              { name: 'SSSS', group:'Technology', Correlation:0.695 }, 
+              { name: 'TEK.AX', group:'Technology', Correlation: 0.784 },
+              { name: 'VRNOF', group:'Cannabis', Correlation: 0.712 }];
+
+var graphData = {nodes:nodes, links:links};
+
+
+// Notes
+// fix drag functionality
+// add/test charge strength where nodes are specifically attracted to one another... may have to be invisible links?
+
+var simulation = d3
+        .forceSimulation(graphData.nodes)
+        .force("charge", d3.forceManyBody().strength(50))
+        .force("center", d3.forceCenter(width / 2, height  / 2).strength(50))
+//        .force("collide", d3.forceCollide().radius(function(d) { return d.correlation * 100; }).strength(10)) // Collision detection
+        .force("collide", 
+            d3.forceCollide(function(d){
+                return d.Correlation * 100 + 2
+            })
+            .strength(0.7))
+
+
+        .on("tick", ticked);
+
+var links = svg
+        .append("g")
+        .selectAll("line")
+        .data(graphData.links)
+        .enter()
+        .append("line")
+        .attr("stroke-width", 3)
+        .style("stroke", "orange");
+
+var drag = d3
+    .drag()
+    .on("start", dragStart)
+    .on("drag", dragged)
+    .on("end", dragEnded);
+
+var textsAndNodes = svg
+    .append("g")
+    .selectAll("g")
+    .data(graphData.nodes)
+    .enter()
+    .append("g")
+    .call(drag);
+
+var circles = textsAndNodes
+    .append("circle")
+    .attr("class", "node")
+    .attr("r", function(d){
+        return d.Correlation * 100;
+    })
+    .attr("fill", "steelblue")
+    .attr("stroke", "black");
+
+var texts = textsAndNodes.append("text")
+                         .text(
+                                function(d){
+                                    return d.name;
+                                });
+
+
+function ticked() {
+    // Translate nodes to their new positions
+    textsAndNodes.attr("transform", function(d) {
+        return "translate(" + d.x + ", " + d.y + ")";
+        }
+    );
+
+    // Update link positions
+    links.attr("x1", function(d) { return d.source.x; }) // links... doesn't need to be graphData.links?
+         .attr("y1", function(d) { return d.source.y; })
+         .attr("x2", function(d) { return d.target.x; })
+         .attr("y2", function(d) { return d.target.y; });
+};
+// function ticked() {
+//     //translate(x,y)
+//     textsAndNodes.attr("transform", function(d){
+//         return "translate(" + d.x + ", " + d.y + ")";
+//     })
+
+//     links
+//     .attr("x1", function(d){
+//         return d.source.x;
+//     })
+//     .attr("y1", function(d){
+//         return d.source.y;
+//     })
+//     .attr("x2", function(d){
+//         return d.target.x;
+//     })
+//     .attr("x1", function(d){
+//         return d.target.y;
+//     });
+
+//    // console.log(simulation.alpha());
+// };
+
+    function dragStart(event, d) {
+      {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+        }
+    };
+
+
+    function dragged(event, d) {
+      d.fx = event.x;
+      d.fy = event.y;
+    };
+
+    function dragEnded(event, d) {
+        // if node has been dragged, activate pin response
+        if (event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+
+        // if d is selected, change color. 
+        if (d.fixed == true) {
+            d3.select(this)
+            .select("circle")
+            .style("fill", "#D72862")
+        }
+
+    };
+
+
+// define strength scale
+// var strengthScale = d3.scaleLinear([d3.min(graphData.links, function(d) {return d.value;}),
+//                                     d3.max(graphData.links, function(d) {return d.value;})],
+//                                     [-100, 100]); // add strength scale
+
+
+// work on node-specific forces
+// l[0] is the source [IMPORTANT], not sure how to implement reference by string (l['source'])
+// for (let i = 0; i < graphData.links.length - 1; i++){
+//     console.log(i)
+//     let l = graphData.links[i]
+//     console.log("l:", l, l['source'], l['target'])
+//     let sourceNode = graphData.nodes.find(function(node) {return node.name === l['source'];})
+//     let targetNode = graphData.nodes.find(function(node) {return node.name === l['target'];})
+//     let forceStrength = strengthScale(l['value'])
+
+//     console.log("source:", sourceNode, "target:", targetNode, "forceStrength:", forceStrength)
+//     // console.log(graphData.nodes.find(function(node) {return node.name === l[0];}));
+//     // console.log("raw strength:", l['value'], "scaled strength:", strengthScale(l['value'])) 
+//     //console.log("test access of nodes:", graphData.nodes.find(function(node) {return node.name === 'GBDC';}))
+//     //console.log("node 0:", graphData.nodes[0], "node 1:", graphData.nodes[1])
+//    // try to get sim force running with a single example, then advance to iterative process
+//     simulation.force("charge", isolate(d3.forceManyBody()
+//                                          .strength(forceStrength),
+//                                                     sourceNode,
+//                                                     targetNode)
+//                                 );
+                        //isolate(d3.forceManyBody().strength(100), graphData.nodes[0], graphData.nodes[1]))
+                    
+    // simulation.force(graphData.nodes[i].id.concat(graphData.nodes[j].id), 
+    //                      isolate(d3.forceManyBodyReuse().strength(-30), graphData.nodes[i], graphData.nodes[j])
+    
+    //simulation.force(graphData.nodes[l.source])
+//};
+
+// ##### ORIGINAL EXAMPLE ######
+// data.nodes contains all nodes
+// for(let i = 0; i < graphData.nodes.length - 1; i++){
+//     for(let j = i + 1; j < graphData.nodes.length; j++){
+//         console.log("i", i, "j", j)
+//         simulation.force(graphData.nodes[i].id.concat(graphData.nodes[j].id), 
+//                          isolate(d3.forceManyBodyReuse().strength(-30), graphData.nodes[i], graphData.nodes[j]));
+//     }
+// }
+
+// function isolate(force, nodeA, nodeB) {
+//     let initialize = force.initialize;
+//     force.initialize = function() { initialize.call(force, [nodeA, nodeB]); };
+//     return force;
+// }
+
+
+    // Close data function and catch error if it exists
+}).catch(function(error) {
+        console.log(error);
+});
+
+</script>
