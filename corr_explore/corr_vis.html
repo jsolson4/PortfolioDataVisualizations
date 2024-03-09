@@ -19,15 +19,14 @@
         <!-- Content for the left column goes here -->
         <h2>Corr Explore</h2>
         <p><i>This is an exciting new way to visualize portfolio correlation.</i></p>
+    
+        <div class="slidecontainer">
+            <input type="range" min="0" max="1" value="0.0" 
+                step = "0.01" class="slider" id="corrRange">
+                
+        <!-- Display the selected value -->
+        <p>Min. Correlation: <span id="corrMinValue">0.0</span></p>    
     </div>
-
-    <div class="slidecontainer">
-        <input type="range" min="0" max="1" value="0.0" 
-            step = "0.01" class="slider" id="corrRange">
-            
-<!-- Display the selected value -->
-<p>Min. Correlation: <span id="corrMinValue">0.0</span></p>
-
 <script>
 
     
@@ -46,24 +45,22 @@
 //     updateNodeVisibility(corrMinValue);
 //   }
 // );
-
 </script>
 
-<script>var slider = document.getElementById("corrRange")
-;</script>
+
+
+<script>var slider = document.getElementById("corrRange");
+
+</script>
       </div>
 </div>
 
 <!-- Create a div where the graph will take place -->
 <div class="right-column">
 
-
-
-
 <svg id = "graph-container" width="800" height = "800"></svg>
 
 <script>
-
 // select the svg container
 var svg = d3.select("#graph-container"); //ensure this works
 
@@ -71,8 +68,7 @@ var margin = {top: 20, right: 20, bottom: 30, left: 50}
 var width = +svg.attr("width") - margin.left - margin.right;
 var height = +svg.attr("height") - margin.top - margin.bottom;
 
-console.log(margin, width, height)
-
+console.log("slider:", slider.value)
 
 d3.dsv(',', 'data/ticker_corr2.csv', function(d) {
     //if (d.Correlation >= corr_filter_min) {
@@ -96,6 +92,12 @@ var nodes = [
               { name: 'SSSS', group:'Technology', Correlation:0.695 }, 
               { name: 'TEK.AX', group:'Technology', Correlation: 0.784 },
               { name: 'VRNOF', group:'Cannabis', Correlation: 0.712 }];
+
+// filter nodes based on slider
+// var nodes = nodes.filter(function(node) {
+//     console.log("inside filter:", node.Correlation <= slider.value)
+//     return node.Correlation <= slider.value;
+// });
 
 var graphData = {nodes:nodes, links:links};
 
@@ -143,9 +145,9 @@ var textsAndNodes = svg
     .data(graphData.nodes)
     .enter()
     .append("g")
-    // .filter(function(d){ 
-    //     console.log(d, d.Correlation, corrMinimumDisplay)
-    //     return d.Correlation >= +corrMinimumDisplay.textContent })
+    .filter(function(d){ 
+        console.log(d, d.Correlation, +corrMinimumDisplay.textContent)
+        return d.Correlation >= +corrMinimumDisplay.textContent})
     .call(drag)
     .on("click", clicked);
 
@@ -173,11 +175,6 @@ function ticked() {
         return "translate(" + d.x + ", " + d.y + ")";
     });
 
-
-
-    
-
-
     // links
     // .attr("x1", function(d){
     //     return d.source.x;
@@ -194,6 +191,48 @@ function ticked() {
 
     // console.log(simulation.alpha());
 };
+
+
+// Define a function to update the visualization based on correlation threshold
+function updateVisualization(correlationThreshold) {
+    // Filter nodes based on the correlation threshold
+    nodes = nodes.filter(function(node) {
+        console.log('update vis fx:', node.Correlation, "corr threshold:", correlationThreshold, "logic:", node.Correlation < correlationThreshold)
+        return node.Correlation < correlationThreshold;
+    });
+
+    // Update your visualization to display only the filtered nodes
+    // Your visualization update code goes here
+    // For example, you might update the node positions or remove nodes from the visualization
+}
+
+
+// get slider
+var slider = document.getElementById('corrRange');
+
+// Function to update the slider position
+function updateSliderPosition(value) {
+    console.log("slider:", slider, "value:", slider.value)
+    slider.value = value;
+}
+
+// Add event listener to the slider
+slider.addEventListener('input', function() {
+    var correlationThreshold = +this.value; // Convert slider value to a number
+    updateVisualization(correlationThreshold);
+    updateSliderPosition(+this.value);
+});
+
+
+
+
+// Add event listener to the slider
+document.getElementById('corrRange').addEventListener('input', function() {
+    var correlationThreshold = +this.value; // Convert slider value to a number
+    updateVisualization(correlationThreshold);
+});
+
+
 
 function dragStart(event, d) {
       {
@@ -231,10 +270,12 @@ function clicked(event, d) {
         // Toggle node color
         if (isSelected) {
             // If already selected, turn it off
-            circle.attr("fill", "steelblue");
+            circle.attr("fill", "steelblue")
+            circle.attr("stroke", "black");
         } else {
             // If not selected, turn it on
-            circle.attr("fill", "E1E6EC");
+            circle.attr("fill", "#D72862")
+            circle.attr("stroke", "white");
         }
 };
 
