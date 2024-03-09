@@ -35,58 +35,125 @@ var svg = d3.select("svg");
 var width = svg.attr("width");
 var height = svg.attr("height");
 
-// Sample data for nodes and links with correlation values
-var nodes = [
-    { id: 'SSSS' },
-    { id: 'AYR' },
-    { id: 'VRNOF' },
-    { id: 'GBDC' }
+// Sample links data
+var links = [
+    { source: 'GBDC', target: 'POLY.L', Correlation: 0.6 },
+    { source: 'POLY.L', target: 'PSDN', Correlation: 0.8 },
+    { source: 'POLY.L', target: 'SKF.AX', Correlation: 0.5 },
+    { source: 'SSSS', target: 'TEK.AX', Correlation: 0.7 },
+    { source: 'TEK.AX', target: 'VRNOF', Correlation: 0.6 }
 ];
 
-var links = [
-    { source: 'SSSS', target: 'AYR', correlation: 0.8 },
-    { source: 'AYR', target: 'VRNOF', correlation: 0.6 },
-    { source: 'AYR', target: 'GBDC', correlation: 0.7 }
+// Sample node data
+var nodes = [
+    { name: 'GBDC', group:'Credit', Correlation: 0.393 }, 
+    { name: 'POLY.L', group :'Mining', Correlation: 0.721 }, 
+    { name: 'PSDN', group:'Cannabis', Correlation:0.854 }, 
+    { name: 'SKF.AX', group:'Technology', Correlation:0.597 }, 
+    { name: 'SSSS', group:'Technology', Correlation:0.695 }, 
+    { name: 'TEK.AX', group:'Technology', Correlation: 0.784 },
+    { name: 'VRNOF', group:'Cannabis', Correlation: 0.712 }
 ];
+
+
+var textsAndNodes = svg
+    .append("g")
+    .selectAll("g")
+    .data(nodes)
+    .enter()
+    .append("g");
+    //.call(drag);
+
+var circles = textsAndNodes
+    .append("circle")
+    .attr("class", "node")
+    .attr("r", function(d){
+        return d.Correlation * 100;
+    })
+    .attr("fill", "steelblue")
+    .attr("stroke", "black");
+
+var texts = textsAndNodes.append("text").text(
+    function(d){
+        return d.name;
+    });
+
+console.log("test")
 
 // Create a new force simulation
 var simulation = d3.forceSimulation(nodes)
     .force('charge', d3.forceManyBody().strength(-100)) // Repulsion force between nodes
-    .force('link', d3.forceLink().id(d => d.id)) // Link force
-    .force('center', d3.forceCenter(width / 2, height / 2)); // Centering force
+    .force('center', d3.forceCenter(width / 2, height / 2).strength(100)) // Centering force
+    .force("collide", 
+            d3.forceCollide(function(d){
+                return d.Correlation * 100 + 2
+            })
+            .strength(0.7));
 
-// Custom force to attract nodes based on correlation
-function attractByCorrelation() {
-    for (var i = 0; i < nodes.length; i++) {
-        for (var j = i + 1; j < nodes.length; j++) {
-            var node1 = nodes[i];
-            var node2 = nodes[j];
-            var link = links.find(link => (link.source === node1.id && link.target === node2.id) || (link.source === node2.id && link.target === node1.id));
-            if (link) {
-                var distance = Math.abs(link.correlation) * 100; // Scale correlation to set distance
-                var xDist = node2.x - node1.x;
-                var yDist = node2.y - node1.y;
-                var distanceBetweenNodes = Math.sqrt(xDist * xDist + yDist * yDist);
-                var xForce = xDist / distanceBetweenNodes * distance;
-                var yForce = yDist / distanceBetweenNodes * distance;
-                node1.vx += xForce;
-                node1.vy += yForce;
-                node2.vx -= xForce;
-                node2.vy -= yForce;
-            }
+// Custom force to attract nodes based on link values
+function attractByCorrelation(links) {
+    links.forEach(function(link) {
+        var sourceNode = nodes.find(function(node) {
+            return node.name === link.source;
+        });
+        var targetNode = nodes.find(function(node) {
+            return node.name === link.target;
+        });
+
+        //console.log("sourceNode:", sourceNode, "targetNode:", targetNode)
+        console.log("check logic:", sourceNode && targetNode)
+        if (sourceNode && targetNode) {
+            var distance = Math.abs(link.Correlation) * 100; // Adjust the scale factor as needed
+            var xDist = targetNode.x - sourceNode.x;
+            var yDist = targetNode.y - sourceNode.y;
+            var distanceBetweenNodes = Math.sqrt(xDist * xDist + yDist * yDist);
+            var xForce = xDist / distanceBetweenNodes * distance;
+            var yForce = yDist / distanceBetweenNodes * distance;
+            sourceNode.vx += xForce;
+            sourceNode.vy += yForce;
+            targetNode.vx -= xForce;
+            targetNode.vy -= yForce;
+            console.log("check logic after update:", sourceNode && targetNode)
         }
-    }
+    });
 }
 
+// defined 'ticked' function to assign positions to nodes
+function ticked() {
+    //translate(x,y)
+    textsAndNodes.attr("transform", function(d){
+        return "translate(" + d.x + ", " + d.y + ")";
+        });
+
+    links
+    .attr("x1", function(d){
+        return d.source.x;
+    })
+    .attr("y1", function(d){
+        return d.source.y;
+    })
+    .attr("x2", function(d){
+        return d.target.x;
+    })
+    .attr("x1", function(d){
+        return d.target.y;
+    });
+
+   // console.log(simulation.alpha());
+}
+
+
+console.log("test 2")
+
 // Add the tick event to update positions
-simulation.on('tick', function() {
-    attractByCorrelation(); // Apply custom force
-    link.attr('x1', d => d.source.x)
-        .attr('y1', d => d.source.y)
-        .attr('x2', d => d.target.x)
-        .attr('y2', d => d.target.y);
-    node.attr('cx', d => d.x)
-        .attr('cy', d => d.y);
+simulation
+.on('tick', ticked)    
+.on('tick', function() {
+    attractByCorrelation(links); // Apply custom force
+    // Update node positions
+    // node.attr('cx', function(d) { return d.x; })
+    //     .attr('cy', function(d) { return d.y; });
+
 });
 
 
