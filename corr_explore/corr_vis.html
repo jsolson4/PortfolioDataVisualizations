@@ -57,11 +57,22 @@
 <!-- Create a div where the graph will take place -->
 <div class="right-column">
 
-<svg id ="graph-container" width="800" height = "800"></svg>
+
+
+
+<svg id = "graph-container" width="800" height = "800"></svg>
 
 <script>
 
+// select the svg container
 var svg = d3.select("#graph-container"); //ensure this works
+
+var margin = {top: 20, right: 20, bottom: 30, left: 50}
+var width = +svg.attr("width") - margin.left - margin.right;
+var height = +svg.attr("height") - margin.top - margin.bottom;
+
+console.log(margin, width, height)
+
 
 d3.dsv(',', 'data/ticker_corr2.csv', function(d) {
     //if (d.Correlation >= corr_filter_min) {
@@ -91,20 +102,17 @@ var graphData = {nodes:nodes, links:links};
 // Notes
 // fix drag functionality
 // add/test charge strength where nodes are specifically attracted to one another... may have to be invisible links?
-var centerWidth = +svg.attr("width")/2
-var centerHeight = +svg.attr("height")/2
-console.log("center width:", centerWidth, "center height:", centerHeight)
-
+console.log("width:", width/2, "height:", height/2)
 // render issue was due to setting strength on forceCenter too high
 var simulation = d3
         .forceSimulation(graphData.nodes)
-        .force("charge", d3.forceManyBody().strength(5))
-        .force("center", d3.forceCenter(centerWidth, centerHeight).strength(1))
+        .force("charge", d3.forceManyBody().strength(4))//5
+        .force("center", d3.forceCenter(width/2, height/2).strength(1))//1 
         .force("collide", 
             d3.forceCollide(function(d){
-                return d.Correlation * 100 + 2
+                return d.Correlation * 100 
             })
-            .strength(0.7))
+            .strength(0.8))//0.7
         .on("tick", ticked);
 
 var drag = d3
@@ -156,8 +164,8 @@ var circles = textsAndNodes
     ;
 
 var texts = textsAndNodes.append("text")
+                         .attr("class", "text")
                          .text(function(d){return d.name;})
-                         .attr("fill", "black");
 
 function ticked() {
     //translate(x,y)
@@ -187,6 +195,48 @@ function ticked() {
     // console.log(simulation.alpha());
 };
 
+function dragStart(event, d) {
+      {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+        }
+    };
+
+
+function dragged(event, d) {
+    d.fx = event.x;
+    d.fy = event.y;
+};
+
+function dragEnded(event, d) {
+    // if node has been dragged, activate pin response
+    if (event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+
+    // if d is selected, change color. 
+    if (d.fixed == true) {
+        d3.select(this)
+        .select("circle")
+        .style("fill", "#D72862")
+    }
+};
+
+function clicked(event, d) {
+        var circle = d3.select(this).select("circle");
+        // Check if the node is already selected (red fill color)
+        var isSelected = circle.attr("fill") === "#D72862";
+
+        // Toggle node color
+        if (isSelected) {
+            // If already selected, turn it off
+            circle.attr("fill", "steelblue");
+        } else {
+            // If not selected, turn it on
+            circle.attr("fill", "E1E6EC");
+        }
+};
 
 // define strength scale
 // var strengthScale = d3.scaleLinear([d3.min(graphData.links, function(d) {return d.value;}),

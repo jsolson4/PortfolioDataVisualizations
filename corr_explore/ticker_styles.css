@@ -5,9 +5,10 @@
 }
 
 .text {
-    fill: white;
-    font: 10px sans-serif;
+    fill: black;
+    font: 12px ;
     pointer-events: none;
+    text-anchor: middle;
   }
 
 
