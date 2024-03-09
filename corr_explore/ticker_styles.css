@@ -11,8 +11,6 @@
     text-anchor: middle;
   }
 
-
-
 /* Reset default margin and padding for the body */
 /* .body {
     margin: 0;
@@ -31,6 +29,10 @@
     display: inline-block;
 }
 
+.left-column-content {
+    margin-left:20
+}
+
 .right-column {
     width: 80%; /* Set the width to occupy 25% of the page */
     height: 100vh; /* Make the column full height of the viewport */
@@ -40,6 +42,7 @@
     left: 20%; /* Align to the left of the viewport */
     background-color: #86aceb;
     display: inline-block; /*Allows for separation of divs*/
+
 }
 
 
