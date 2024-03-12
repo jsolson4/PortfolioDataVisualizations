@@ -4,6 +4,8 @@ import numpy as np
 
 
 tickers = ['SSSS', 'GBDC', 'POLY.L', 'TEK.AX', 'SKF.AX', 'PSDN', 'VRNOF']
+tickers = ['EQLS', 'HIGH', 'CTA', 'QIS', 'MBTA', 'RIET', 'URNM', 'SSSS', 'NDP', 'TPP', 'CEE', 'EWZ', 'SPD', 'MSOS',\
+           'FTLS', 'DBMF', 'QAI', 'RLY', 'SPY', 'MNA', 'KMLM', 'BTAL', 'WTMF', 'FLSP']
 
 ### Initial Operations
 def returns(df):
@@ -93,12 +95,10 @@ df = df[df['oneway'] == True].drop("oneway", axis = 1)
 # normalize correlation
 df["norm_corr"] = ((df["Correlation"] - df["Correlation"].mean()) / df["Correlation"].std()).round(3)
 
-print(df)
+df.to_csv("ticker_corr3.csv", index = False)
 
-df.to_csv("ticker_corr2.csv", index = False)
-
-df = df.groupby(['source'], as_index = False).mean().round(3).rename(columns={'source':'name'})
+df = df.groupby(['source'], as_index = False)['Correlation'].mean().round(3).rename(columns={'source':'name'})
 
 df = df.drop_duplicates()
 
-df.to_csv("ticker_nodes.csv")
+df.to_csv("ticker_nodes3.csv")
