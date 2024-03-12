@@ -45,6 +45,15 @@
 
 }
 
+.tooltip {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ddd;
+    padding: 5px;
+    border-radius: 5px;
+    pointer-events: none;
+    opacity: 0;
+}
 
 /* Additional styling for content within the left column */
 /* .left-column-content {

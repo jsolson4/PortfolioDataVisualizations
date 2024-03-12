@@ -61,17 +61,17 @@
 <svg id = "graph-container" width="800" height = "800"></svg>
 
 <script>
-// select the svg container
-var svg = d3.select("#graph-container"); //ensure this works
-
+// select the svg container; add mouseover catching
+var svg = d3.select("#graph-container");
 var margin = {top: 20, right: 20, bottom: 30, left: 50}
 var width = +svg.attr("width") - margin.left - margin.right;
 var height = +svg.attr("height") - margin.top - margin.bottom;
 
 console.log("slider:", slider.value)
 
-d3.dsv(',', 'data/ticker_corr2.csv', function(d) {
-    //if (d.Correlation >= corr_filter_min) {
+
+// read in the ticker-level interaction data (pairwise correlation)
+d3.dsv(',', 'data/ticker_corr3.csv', function(d) {
     console.log(d.source, d.target, d.Correlation, d.norm_corr)
       return {
           source: d.source,
@@ -79,19 +79,35 @@ d3.dsv(',', 'data/ticker_corr2.csv', function(d) {
           correlation: +d.Correlation,
           value: isNaN(d.norm_corr) ? 0 : +d.norm_corr,
         }     
-    //}
 }).then(function(data) {
 
-var links = data;
+    var links = data;
+
+    // read in the node data
+    d3.dsv(',', 'data/ticker_nodes3.csv', function(d) {
+    console.log(d.name, d.Correlation)
+      return {
+          name: d.name,
+          Correlation: +d.Correlation,
+        }
+}).then(function(data2) {
+
+var nodes = data2;
+
 console.log("links:", links)
-var nodes = [
-              { name: 'GBDC', group:'Credit', Correlation: 0.393 }, 
-              { name: 'POLY.L', group :'Mining', Correlation: 0.721 }, 
-              { name: 'PSDN', group:'Cannabis', Correlation:0.854 }, 
-              { name: 'SKF.AX', group:'Technology', Correlation:0.597 }, 
-              { name: 'SSSS', group:'Technology', Correlation:0.695 }, 
-              { name: 'TEK.AX', group:'Technology', Correlation: 0.784 },
-              { name: 'VRNOF', group:'Cannabis', Correlation: 0.712 }];
+// var nodes = [
+//               { name: 'GBDC', group:'Credit', Correlation: 0.393 }, 
+//               { name: 'POLY.L', group :'Mining', Correlation: 0.721 }, 
+//               { name: 'PSDN', group:'Cannabis', Correlation:0.854 }, 
+//               { name: 'SKF.AX', group:'Technology', Correlation:0.597 }, 
+//               { name: 'SSSS', group:'Technology', Correlation:0.695 }, 
+//               { name: 'TEK.AX', group:'Technology', Correlation: 0.784 },
+//               { name: 'VRNOF', group:'Cannabis', Correlation: 0.712 }];
+
+// var nodes = [
+//     {name:}
+// ]
+
 
 // filter nodes based on slider
 // var nodes = nodes.filter(function(node) {
@@ -140,7 +156,6 @@ var drag = d3
 );
 
 var textsAndNodes = svg
-    .append("g")
     .selectAll("g")
     .data(graphData.nodes)
     .enter()
@@ -149,9 +164,26 @@ var textsAndNodes = svg
         console.log(d, d.Correlation, +corrMinimumDisplay.textContent)
         return d.Correlation >= +corrMinimumDisplay.textContent})
     .call(drag)
-    .on("click", clicked);
-
-
+    .on("click", clicked)
+    // .on("mouseover", (event, d) => {
+    //     // Create or select the tooltip div
+    //     //let tooltip = d3.select("#graph-container").selectAll(".tooltip").data([d]);
+    //     let tooltip = d3.select("#graph-container").data([d]);//.attr("class", "tooltip");
+        
+    //     tooltip = tooltip.enter().append("div").attr("class", "tooltip").merge(tooltip);
+                        
+    //                     // Update tooltip content and position
+    //     tooltip
+    //             .html(`Value: ${d.Correlation}`)
+    //             .style("left", (event.pageX + 10) + "px")
+    //             .style("top", (event.pageY - 20) + "px")
+    //             .style("opacity", 1);
+    //         })
+    // .on("mouseout", () => {
+    //     d3.select(".tooltip")
+    //         .style("opacity", 0);
+    // });
+    
 //textsAndNodes = textsAndNodes.filter(function(d){ return d.Correlation >= corrMinValue })
 
 var circles = textsAndNodes
@@ -332,9 +364,14 @@ function clicked(event, d) {
 
 
     // Close data function and catch error if it exists
+
 }).catch(function(error) {
         console.log(error);
 });
+
+}).catch(function(error) {
+            console.error("Error loading file 2:", error);
+        });
 
 </script>
 </div>
