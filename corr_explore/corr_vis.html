@@ -72,7 +72,7 @@ console.log("slider:", slider.value)
 
 // read in the ticker-level interaction data (pairwise correlation)
 d3.dsv(',', 'data/ticker_corr3.csv', function(d) {
-    console.log(d.source, d.target, d.Correlation, d.norm_corr)
+    //console.log(d.source, d.target, d.Correlation, d.norm_corr)
       return {
           source: d.source,
           target: d.target,
@@ -94,21 +94,6 @@ d3.dsv(',', 'data/ticker_corr3.csv', function(d) {
 
 var nodes = data2;
 
-console.log("links:", links)
-// var nodes = [
-//               { name: 'GBDC', group:'Credit', Correlation: 0.393 }, 
-//               { name: 'POLY.L', group :'Mining', Correlation: 0.721 }, 
-//               { name: 'PSDN', group:'Cannabis', Correlation:0.854 }, 
-//               { name: 'SKF.AX', group:'Technology', Correlation:0.597 }, 
-//               { name: 'SSSS', group:'Technology', Correlation:0.695 }, 
-//               { name: 'TEK.AX', group:'Technology', Correlation: 0.784 },
-//               { name: 'VRNOF', group:'Cannabis', Correlation: 0.712 }];
-
-// var nodes = [
-//     {name:}
-// ]
-
-
 // filter nodes based on slider
 // var nodes = nodes.filter(function(node) {
 //     console.log("inside filter:", node.Correlation <= slider.value)
@@ -121,6 +106,10 @@ var graphData = {nodes:nodes, links:links};
 // fix drag functionality
 // add/test charge strength where nodes are specifically attracted to one another... may have to be invisible links?
 console.log("width:", width/2, "height:", height/2)
+
+// function to scale the nodes
+var nodeScale = d3.scaleLinear(d3.extent(graphData.nodes, d => d.Correlation), [10, 50])
+
 // render issue was due to setting strength on forceCenter too high
 var simulation = d3
         .forceSimulation(graphData.nodes)
@@ -128,7 +117,7 @@ var simulation = d3
         .force("center", d3.forceCenter(width/2, height/2).strength(1))//1 
         .force("collide", 
             d3.forceCollide(function(d){
-                return d.Correlation * 100 
+                return nodeScale(d.Correlation)
             })
             .strength(0.8))//0.7
         .on("tick", ticked);
@@ -155,32 +144,87 @@ var drag = d3
   }
 );
 
+// Create a tooltip
+var Tooltip = d3.select("#graph-container")
+                .append("div")
+                .style("opacity", 0)
+                .attr("class", "tooltip")
+                .style("background-color", "white")
+                .style("boarder", "solid")
+                .style("boarder-width", "2px")
+                .style("boarder-radius", "5px")
+                .style("padding", "5px")
+
+  // Three function that change the tooltip when user hover / move / leave a cell
+  var mouseover = function(d) {
+    Tooltip
+      .style("opacity", 1)
+    d3.select(this)
+      .style("stroke", "black")
+      .style("opacity", 1)
+  }
+
+//   var mousemove = function(d) {
+//     Tooltip
+//       .html("The exact value of<br>this cell is: " + d.Correlation)
+//       .style("left", (d3.mouse(this)[0]+70) + "px")
+//       .style("top", (d3.mouse(this)[1]) + "px")
+//   }
+  
+var mousemove = function(event, d) {
+    //console.log("event:", event)
+    Tooltip
+      .html("The exact value of<br>this cell is: " + d.Correlation)
+      .style("left", (event.x +70) + "px")
+      .style("top", (event.y) + "px")
+  }
+
+  var mouseleave = function(d) {
+    Tooltip
+      .style("opacity", 0)
+    d3.select(this)
+      .style("stroke", "none")
+      .style("opacity", 1)
+  }
+
 var textsAndNodes = svg
     .selectAll("g")
     .data(graphData.nodes)
     .enter()
     .append("g")
-    .filter(function(d){ 
-        console.log(d, d.Correlation, +corrMinimumDisplay.textContent)
-        return d.Correlation >= +corrMinimumDisplay.textContent})
+    // .filter(function(d){ 
+    //     console.log(d, d.Correlation, +corrMinimumDisplay.textContent)
+    //     return d.Correlation >= +corrMinimumDisplay.textContent})
     .call(drag)
     .on("click", clicked)
+    .on("mouseover", mouseover)
+    .on("mousemove", mousemove)
+    .on("mouseout", mouseleave)
+
     // .on("mouseover", (event, d) => {
     //     // Create or select the tooltip div
     //     //let tooltip = d3.select("#graph-container").selectAll(".tooltip").data([d]);
-    //     let tooltip = d3.select("#graph-container").data([d]);//.attr("class", "tooltip");
-        
-    //     tooltip = tooltip.enter().append("div").attr("class", "tooltip").merge(tooltip);
-                        
-    //                     // Update tooltip content and position
+    //     console.log("d:", d)
+    //     let tooltip = d3.select("g").data([d]);//.attr("class", "tooltip");
+    //     console.log("tooltip:", tooltip)
+    //     tooltip = tooltip.enter()
+    //                      .append("div")
+    //                      .attr("class", "tooltip")
+    //                      .merge(tooltip);
+
+    //     console.log("tooltip2:", tooltip)
+
+    //     // Update tooltip content and position
     //     tooltip
-    //             .html(`Value: ${d.Correlation}`)
-    //             .style("left", (event.pageX + 10) + "px")
-    //             .style("top", (event.pageY - 20) + "px")
-    //             .style("opacity", 1);
+    //         .html(`Value: ${d.Correlation}`)
+    //         .style("left", (event.pageX + 10) + "px")
+    //         .style("top", (event.pageY - 20) + "px")
+    //         .style("opacity", 1);
     //         })
+
     // .on("mouseout", () => {
     //     d3.select(".tooltip")
+    //     //.attr("class", "node")
     //         .style("opacity", 0);
     // });
     
@@ -190,7 +234,7 @@ var circles = textsAndNodes
     .append("circle")
     .attr("class", "node")
     .attr("r", function(d){
-        return d.Correlation * 100;
+        return nodeScale(d.Correlation);
     })
     .attr("fill", "steelblue")
     .attr("stroke", "black")
@@ -207,21 +251,6 @@ function ticked() {
         return "translate(" + d.x + ", " + d.y + ")";
     });
 
-    // links
-    // .attr("x1", function(d){
-    //     return d.source.x;
-    // })
-    // .attr("y1", function(d){
-    //     return d.source.y;
-    // })
-    // .attr("x2", function(d){
-    //     return d.target.x;
-    // })
-    // .attr("x1", function(d){
-    //     return d.target.y;
-    // });
-
-    // console.log(simulation.alpha());
 };
 
 
@@ -239,7 +268,7 @@ function updateVisualization(correlationThreshold) {
 }
 
 
-// get slider
+// Define slider
 var slider = document.getElementById('corrRange');
 
 // Function to update the slider position
@@ -255,16 +284,11 @@ slider.addEventListener('input', function() {
     updateSliderPosition(+this.value);
 });
 
-
-
-
 // Add event listener to the slider
 document.getElementById('corrRange').addEventListener('input', function() {
     var correlationThreshold = +this.value; // Convert slider value to a number
     updateVisualization(correlationThreshold);
 });
-
-
 
 function dragStart(event, d) {
       {
@@ -273,7 +297,6 @@ function dragStart(event, d) {
         d.fy = d.y;
         }
     };
-
 
 function dragged(event, d) {
     d.fx = event.x;
