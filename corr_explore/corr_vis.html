@@ -19,6 +19,7 @@
         <!-- Content for the left column goes here -->
         <h2>Corr Explore</h2>
         <p><i>This is an exciting new way to visualize portfolio correlation.</i></p>
+        \
     
         <div class="slidecontainer">
             <input type="range" min="0" max="1" value="0.0" 
@@ -49,9 +50,7 @@
 
 
 
-<script>var slider = document.getElementById("corrRange");
-
-</script>
+<script>var slider = document.getElementById("corrRange");</script>
       </div>
 </div>
 
@@ -60,6 +59,8 @@
 
 <svg id = "graph-container" width="800" height = "800"></svg>
 
+<div class="tooltip" id="tooltip"></div>
+
 <script>
 // select the svg container; add mouseover catching
 var svg = d3.select("#graph-container");
@@ -67,8 +68,10 @@ var margin = {top: 20, right: 20, bottom: 30, left: 50}
 var width = +svg.attr("width") - margin.left - margin.right;
 var height = +svg.attr("height") - margin.top - margin.bottom;
 
-console.log("slider:", slider.value)
+//console.log("slider:", slider.value)
 
+
+// #327FB9 #012348 #003466 #262626 #6B6F72 #0C5E98 #D9D9D9 #F3F2F2
 
 // read in the ticker-level interaction data (pairwise correlation)
 d3.dsv(',', 'data/ticker_corr3.csv', function(d) {
@@ -145,7 +148,7 @@ var drag = d3
 );
 
 // Create a tooltip
-var Tooltip = d3.select("#graph-container")
+var Tooltip = d3.select("g")//.select("#graph-container")
                 .append("div")
                 .style("opacity", 0)
                 .attr("class", "tooltip")
@@ -155,22 +158,37 @@ var Tooltip = d3.select("#graph-container")
                 .style("boarder-radius", "5px")
                 .style("padding", "5px")
 
-  // Three function that change the tooltip when user hover / move / leave a cell
-  var mouseover = function(d) {
-    Tooltip
-      .style("opacity", 1)
-    d3.select(this)
-      .style("stroke", "black")
-      .style("opacity", 1)
-  }
+// example to reference  
+// function clicked(event, d) {
+//         var circle = d3.select(this).select("circle");
+//         // Check if the node is already selected (red fill color)
+//         var isSelected = circle.attr("fill") === "#D72862";
 
-//   var mousemove = function(d) {
-//     Tooltip
-//       .html("The exact value of<br>this cell is: " + d.Correlation)
-//       .style("left", (d3.mouse(this)[0]+70) + "px")
-//       .style("top", (d3.mouse(this)[1]) + "px")
-//   }
+//         // Toggle node color
+//         if (isSelected) {
+//             // If already selected, turn it off
+//             circle.attr("fill", "steelblue")
+//             circle.attr("stroke", "black");
+//         } else {
+//             // If not selected, turn it on
+//             circle.attr("fill", "#D72862")
+//             circle.attr("stroke", "white");
+//         }
+// };
   
+// Three function that change the tooltip when user hover / move / leave a cell
+function mouseover(event, d) {
+
+    // get pointer position
+    var xy = d3.pointer(event, svg.node())
+
+    d3.select("#tooltip")
+        .style("opacity", 1)
+        .html(`Correlation: ${d.Correlation}`)
+        .style("left", (xy[0]) + "px")
+        .style("top", (xy[1]-50) + "px");
+};
+
 var mousemove = function(event, d) {
     //console.log("event:", event)
     Tooltip
@@ -179,12 +197,10 @@ var mousemove = function(event, d) {
       .style("top", (event.y) + "px")
   }
 
-  var mouseleave = function(d) {
-    Tooltip
-      .style("opacity", 0)
-    d3.select(this)
-      .style("stroke", "none")
-      .style("opacity", 1)
+  var mouseleave = function(event, d) {
+    console.log("mouse leave:", mouseleave)
+    d3.select("#tooltip")
+        .style("opacity", 0)
   }
 
 var textsAndNodes = svg
@@ -201,6 +217,8 @@ var textsAndNodes = svg
     .on("mousemove", mousemove)
     .on("mouseout", mouseleave)
 
+
+    
     // .on("mouseover", (event, d) => {
     //     // Create or select the tooltip div
     //     //let tooltip = d3.select("#graph-container").selectAll(".tooltip").data([d]);
@@ -236,9 +254,9 @@ var circles = textsAndNodes
     .attr("r", function(d){
         return nodeScale(d.Correlation);
     })
-    .attr("fill", "steelblue")
-    .attr("stroke", "black")
-    .attr("stroke-width", "2")
+    // .attr("fill", "steelblue")
+    // .attr("stroke", "#003466")
+    // .attr("stroke-width", "2")
     ;
 
 var texts = textsAndNodes.append("text")
@@ -317,21 +335,29 @@ function dragEnded(event, d) {
     }
 };
 
-function clicked(event, d) {
+function clicked(event, d, limit = 1) {
         var circle = d3.select(this).select("circle");
-        // Check if the node is already selected (red fill color)
-        var isSelected = circle.attr("fill") === "#D72862";
+        
+        // check if the node is selected
+        var isSelected = circle.attr("class") === "selectedNode"
+        
+        // collect selected nodes
+        const selectedNodes = d3.selectAll("circle.selectedNode");
+        
+        // make sure the number of selected nodes is less than the limit
+        const underNodeClassCapacity = selectedNodes.size() < limit;
 
-        // Toggle node color
-        if (isSelected) {
-            // If already selected, turn it off
-            circle.attr("fill", "steelblue")
-            circle.attr("stroke", "black");
-        } else {
-            // If not selected, turn it on
-            circle.attr("fill", "#D72862")
-            circle.attr("stroke", "white");
+        // Toggle node color //
+        
+        // If not selected and under capacity limit, turn it on
+        if (underNodeClassCapacity) {
+            circle.attr("class", "selectedNode");
         }
+
+        // if node is selected and clicked again, turn it off
+        else if (isSelected) {
+            circle.attr("class", "node");
+        };
 };
 
 // define strength scale
