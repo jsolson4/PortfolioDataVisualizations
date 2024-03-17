@@ -97,6 +97,9 @@ d3.dsv(',', 'data/ticker_corr3.csv', function(d) {
 
 var nodes = data2;
 
+// CORRELATION  SHOULD BE SIZE BY THE ABSOLUTE VALUE
+// THEN NEGATIVELY CORRELATED SECURITIES TO BE DIFFERENT COLOR
+
 // filter nodes based on slider
 // var nodes = nodes.filter(function(node) {
 //     console.log("inside filter:", node.Correlation <= slider.value)
@@ -110,8 +113,8 @@ var graphData = {nodes:nodes, links:links};
 // add/test charge strength where nodes are specifically attracted to one another... may have to be invisible links?
 console.log("width:", width/2, "height:", height/2)
 
-// function to scale the nodes
-var nodeScale = d3.scaleLinear(d3.extent(graphData.nodes, d => d.Correlation), [10, 50])
+// function to scale the nodes to the absolute value of the correlatin
+var nodeScale = d3.scaleLinear(d3.extent(graphData.nodes, d => Math.abs(d.Correlation)), [10, 50])
 
 // render issue was due to setting strength on forceCenter too high
 var simulation = d3
@@ -120,7 +123,7 @@ var simulation = d3
         .force("center", d3.forceCenter(width/2, height/2).strength(1))//1 
         .force("collide", 
             d3.forceCollide(function(d){
-                return nodeScale(d.Correlation)
+                return nodeScale(Math.abs(d.Correlation));
             })
             .strength(0.8))//0.7
         .on("tick", ticked);
@@ -252,7 +255,25 @@ var circles = textsAndNodes
     .append("circle")
     .attr("class", "node")
     .attr("r", function(d){
-        return nodeScale(d.Correlation);
+        return nodeScale(Math.abs(d.Correlation));
+    })
+    // set fill depending on correlation value
+    .attr("fill", function(d){
+        if (d.Correlation < 0){
+            return "grey";
+        }
+        else {
+            return "#0C5E98";
+        }
+    })
+    // set stroke based on correlation value
+    .attr("stroke", function(d){
+        if (d.Correlation < 0){
+            return "black"
+        }
+        else {
+            return "black" //"#003466"
+        }
     })
     // .attr("fill", "steelblue")
     // .attr("stroke", "#003466")
@@ -352,68 +373,18 @@ function clicked(event, d, limit = 1) {
         // If not selected and under capacity limit, turn it on
         if (underNodeClassCapacity) {
             circle.attr("class", "selectedNode");
+            //selectedNodes.attr("class", "node");
         }
 
         // if node is selected and clicked again, turn it off
         else if (isSelected) {
             circle.attr("class", "node");
-        };
+        }
+        
+        ;
 };
 
-// define strength scale
-// var strengthScale = d3.scaleLinear([d3.min(graphData.links, function(d) {return d.value;}),
-//                                     d3.max(graphData.links, function(d) {return d.value;})],
-//                                     [-100, 100]); // add strength scale
-
-
-// work on node-specific forces
-// l[0] is the source [IMPORTANT], not sure how to implement reference by string (l['source'])
-// for (let i = 0; i < graphData.links.length - 1; i++){
-//     console.log(i)
-//     let l = graphData.links[i]
-//     console.log("l:", l, l['source'], l['target'])
-//     let sourceNode = graphData.nodes.find(function(node) {return node.name === l['source'];})
-//     let targetNode = graphData.nodes.find(function(node) {return node.name === l['target'];})
-//     let forceStrength = strengthScale(l['value'])
-
-//     console.log("source:", sourceNode, "target:", targetNode, "forceStrength:", forceStrength)
-//     // console.log(graphData.nodes.find(function(node) {return node.name === l[0];}));
-//     // console.log("raw strength:", l['value'], "scaled strength:", strengthScale(l['value'])) 
-//     //console.log("test access of nodes:", graphData.nodes.find(function(node) {return node.name === 'GBDC';}))
-//     //console.log("node 0:", graphData.nodes[0], "node 1:", graphData.nodes[1])
-//    // try to get sim force running with a single example, then advance to iterative process
-//     simulation.force("charge", isolate(d3.forceManyBody()
-//                                          .strength(forceStrength),
-//                                                     sourceNode,
-//                                                     targetNode)
-//                                 );
-                        //isolate(d3.forceManyBody().strength(100), graphData.nodes[0], graphData.nodes[1]))
-                    
-    // simulation.force(graphData.nodes[i].id.concat(graphData.nodes[j].id), 
-    //                      isolate(d3.forceManyBodyReuse().strength(-30), graphData.nodes[i], graphData.nodes[j])
-    
-    //simulation.force(graphData.nodes[l.source])
-//};
-
-// ##### ORIGINAL EXAMPLE ######
-// data.nodes contains all nodes
-// for(let i = 0; i < graphData.nodes.length - 1; i++){
-//     for(let j = i + 1; j < graphData.nodes.length; j++){
-//         console.log("i", i, "j", j)
-//         simulation.force(graphData.nodes[i].id.concat(graphData.nodes[j].id), 
-//                          isolate(d3.forceManyBodyReuse().strength(-30), graphData.nodes[i], graphData.nodes[j]));
-//     }
-// }
-
-// function isolate(force, nodeA, nodeB) {
-//     let initialize = force.initialize;
-//     force.initialize = function() { initialize.call(force, [nodeA, nodeB]); };
-//     return force;
-// }
-
-
-    // Close data function and catch error if it exists
-
+// Close data function and catch error if it exists
 }).catch(function(error) {
         console.log(error);
 });

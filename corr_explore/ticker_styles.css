@@ -5,10 +5,15 @@
 }
 
 .node{
-    fill:#0C5E98;
+    
+    stroke-width:1.5px;
+}
+
+/* .negativeCorrNode{
+    fill:grey;
     stroke: #003466;
     stroke-width:2px;
-}
+} */
 
 /* .attr("fill", "steelblue")
     .attr("stroke", "#003466")
@@ -76,7 +81,7 @@
     position: absolute;
     font-family: Arial;
     font-size: 9px;
-    background-color: #D9D9D9;
+    background-color: white;
     border: 1px solid #003466;
     padding: 5px;
     border-radius: 5px;
