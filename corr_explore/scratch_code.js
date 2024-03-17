@@ -48,3 +48,34 @@
 //     force.initialize = function() { initialize.call(force, [nodeA, nodeB]); };
 //     return force;
 // }
+
+
+// (below text and nodes)
+    // .on("mouseover", (event, d) => {
+    //     // Create or select the tooltip div
+    //     //let tooltip = d3.select("#graph-container").selectAll(".tooltip").data([d]);
+    //     console.log("d:", d)
+    //     let tooltip = d3.select("g").data([d]);//.attr("class", "tooltip");
+    //     console.log("tooltip:", tooltip)
+    //     tooltip = tooltip.enter()
+    //                      .append("div")
+    //                      .attr("class", "tooltip")
+    //                      .merge(tooltip);
+
+    //     console.log("tooltip2:", tooltip)
+
+    //     // Update tooltip content and position
+    //     tooltip
+    //         .html(`Value: ${d.Correlation}`)
+    //         .style("left", (event.pageX + 10) + "px")
+    //         .style("top", (event.pageY - 20) + "px")
+    //         .style("opacity", 1);
+    //         })
+
+    // .on("mouseout", () => {
+    //     d3.select(".tooltip")
+    //     //.attr("class", "node")
+    //         .style("opacity", 0);
+    // });
+    
+//textsAndNodes = textsAndNodes.filter(function(d){ return d.Correlation >= corrMinValue })
