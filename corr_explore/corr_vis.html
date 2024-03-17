@@ -68,9 +68,7 @@ var margin = {top: 20, right: 20, bottom: 30, left: 50}
 var width = +svg.attr("width") - margin.left - margin.right;
 var height = +svg.attr("height") - margin.top - margin.bottom;
 
-//console.log("slider:", slider.value)
-
-
+// Colors Reference
 // #327FB9 #012348 #003466 #262626 #6B6F72 #0C5E98 #D9D9D9 #F3F2F2
 
 // read in the ticker-level interaction data (pairwise correlation)
@@ -128,6 +126,12 @@ var simulation = d3
             .strength(0.8))//0.7
         .on("tick", ticked);
 
+
+// Define a drag behavior using D3's drag function, which enables drag interactions on SVG elements.
+// This drag behavior listens for three types of events: "start", "drag", and "end".
+// When a drag interaction starts, the dragStart function is called.
+// During the drag interaction, the dragged function is called to handle updates to the dragged element's position.
+// When the drag interaction ends, the dragEnded function is called to perform any necessary cleanup or finalization.
 var drag = d3
     .drag()
     .on("start", dragStart)
@@ -159,25 +163,7 @@ var Tooltip = d3.select("g")//.select("#graph-container")
                 .style("boarder", "solid")
                 .style("boarder-width", "2px")
                 .style("boarder-radius", "5px")
-                .style("padding", "5px")
-
-// example to reference  
-// function clicked(event, d) {
-//         var circle = d3.select(this).select("circle");
-//         // Check if the node is already selected (red fill color)
-//         var isSelected = circle.attr("fill") === "#D72862";
-
-//         // Toggle node color
-//         if (isSelected) {
-//             // If already selected, turn it off
-//             circle.attr("fill", "steelblue")
-//             circle.attr("stroke", "black");
-//         } else {
-//             // If not selected, turn it on
-//             circle.attr("fill", "#D72862")
-//             circle.attr("stroke", "white");
-//         }
-// };
+                .style("padding", "5px");
   
 // Three function that change the tooltip when user hover / move / leave a cell
 function mouseover(event, d) {
@@ -218,39 +204,10 @@ var textsAndNodes = svg
     .on("click", clicked)
     .on("mouseover", mouseover)
     .on("mousemove", mousemove)
-    .on("mouseout", mouseleave)
+    .on("mouseout", mouseleave);
 
-
-    
-    // .on("mouseover", (event, d) => {
-    //     // Create or select the tooltip div
-    //     //let tooltip = d3.select("#graph-container").selectAll(".tooltip").data([d]);
-    //     console.log("d:", d)
-    //     let tooltip = d3.select("g").data([d]);//.attr("class", "tooltip");
-    //     console.log("tooltip:", tooltip)
-    //     tooltip = tooltip.enter()
-    //                      .append("div")
-    //                      .attr("class", "tooltip")
-    //                      .merge(tooltip);
-
-    //     console.log("tooltip2:", tooltip)
-
-    //     // Update tooltip content and position
-    //     tooltip
-    //         .html(`Value: ${d.Correlation}`)
-    //         .style("left", (event.pageX + 10) + "px")
-    //         .style("top", (event.pageY - 20) + "px")
-    //         .style("opacity", 1);
-    //         })
-
-    // .on("mouseout", () => {
-    //     d3.select(".tooltip")
-    //     //.attr("class", "node")
-    //         .style("opacity", 0);
-    // });
-    
-//textsAndNodes = textsAndNodes.filter(function(d){ return d.Correlation >= corrMinValue })
-
+// specify the circle SVGs as node class
+// style based on correlation value
 var circles = textsAndNodes
     .append("circle")
     .attr("class", "node")
@@ -274,12 +231,9 @@ var circles = textsAndNodes
         else {
             return "black" //"#003466"
         }
-    })
-    // .attr("fill", "steelblue")
-    // .attr("stroke", "#003466")
-    // .attr("stroke-width", "2")
-    ;
+    });
 
+// specify texts
 var texts = textsAndNodes.append("text")
                          .attr("class", "text")
                          .text(function(d){return d.name;})
@@ -289,7 +243,6 @@ function ticked() {
     textsAndNodes.attr("transform", function(d){
         return "translate(" + d.x + ", " + d.y + ")";
     });
-
 };
 
 
