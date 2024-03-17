@@ -19,6 +19,7 @@
         <!-- Content for the left column goes here -->
         <h2>Corr Explore</h2>
         <p><i>This is an exciting new way to visualize portfolio correlation.</i></p>
+        \
     
         <div class="slidecontainer">
             <input type="range" min="0" max="1" value="0.0" 
@@ -49,9 +50,7 @@
 
 
 
-<script>var slider = document.getElementById("corrRange");
-
-</script>
+<script>var slider = document.getElementById("corrRange");</script>
       </div>
 </div>
 
@@ -60,38 +59,44 @@
 
 <svg id = "graph-container" width="800" height = "800"></svg>
 
-<script>
-// select the svg container
-var svg = d3.select("#graph-container"); //ensure this works
+<div class="tooltip" id="tooltip"></div>
 
+<script>
+// select the svg container; add mouseover catching
+var svg = d3.select("#graph-container");
 var margin = {top: 20, right: 20, bottom: 30, left: 50}
 var width = +svg.attr("width") - margin.left - margin.right;
 var height = +svg.attr("height") - margin.top - margin.bottom;
 
-console.log("slider:", slider.value)
+// Colors Reference
+// #327FB9 #012348 #003466 #262626 #6B6F72 #0C5E98 #D9D9D9 #F3F2F2
 
-d3.dsv(',', 'data/ticker_corr2.csv', function(d) {
-    //if (d.Correlation >= corr_filter_min) {
-    console.log(d.source, d.target, d.Correlation, d.norm_corr)
+// read in the ticker-level interaction data (pairwise correlation)
+d3.dsv(',', 'data/ticker_corr3.csv', function(d) {
+    //console.log(d.source, d.target, d.Correlation, d.norm_corr)
       return {
           source: d.source,
           target: d.target,
           correlation: +d.Correlation,
           value: isNaN(d.norm_corr) ? 0 : +d.norm_corr,
         }     
-    //}
 }).then(function(data) {
 
-var links = data;
-console.log("links:", links)
-var nodes = [
-              { name: 'GBDC', group:'Credit', Correlation: 0.393 }, 
-              { name: 'POLY.L', group :'Mining', Correlation: 0.721 }, 
-              { name: 'PSDN', group:'Cannabis', Correlation:0.854 }, 
-              { name: 'SKF.AX', group:'Technology', Correlation:0.597 }, 
-              { name: 'SSSS', group:'Technology', Correlation:0.695 }, 
-              { name: 'TEK.AX', group:'Technology', Correlation: 0.784 },
-              { name: 'VRNOF', group:'Cannabis', Correlation: 0.712 }];
+    var links = data;
+
+    // read in the node data
+    d3.dsv(',', 'data/ticker_nodes3.csv', function(d) {
+    console.log(d.name, d.Correlation)
+      return {
+          name: d.name,
+          Correlation: +d.Correlation,
+        }
+}).then(function(data2) {
+
+var nodes = data2;
+
+// CORRELATION  SHOULD BE SIZE BY THE ABSOLUTE VALUE
+// THEN NEGATIVELY CORRELATED SECURITIES TO BE DIFFERENT COLOR
 
 // filter nodes based on slider
 // var nodes = nodes.filter(function(node) {
@@ -105,6 +110,10 @@ var graphData = {nodes:nodes, links:links};
 // fix drag functionality
 // add/test charge strength where nodes are specifically attracted to one another... may have to be invisible links?
 console.log("width:", width/2, "height:", height/2)
+
+// function to scale the nodes to the absolute value of the correlatin
+var nodeScale = d3.scaleLinear(d3.extent(graphData.nodes, d => Math.abs(d.Correlation)), [10, 50])
+
 // render issue was due to setting strength on forceCenter too high
 var simulation = d3
         .forceSimulation(graphData.nodes)
@@ -112,11 +121,17 @@ var simulation = d3
         .force("center", d3.forceCenter(width/2, height/2).strength(1))//1 
         .force("collide", 
             d3.forceCollide(function(d){
-                return d.Correlation * 100 
+                return nodeScale(Math.abs(d.Correlation));
             })
             .strength(0.8))//0.7
         .on("tick", ticked);
 
+
+// Define a drag behavior using D3's drag function, which enables drag interactions on SVG elements.
+// This drag behavior listens for three types of events: "start", "drag", and "end".
+// When a drag interaction starts, the dragStart function is called.
+// During the drag interaction, the dragged function is called to handle updates to the dragged element's position.
+// When the drag interaction ends, the dragEnded function is called to perform any necessary cleanup or finalization.
 var drag = d3
     .drag()
     .on("start", dragStart)
@@ -139,32 +154,86 @@ var drag = d3
   }
 );
 
+// Create a tooltip
+var Tooltip = d3.select("g")//.select("#graph-container")
+                .append("div")
+                .style("opacity", 0)
+                .attr("class", "tooltip")
+                .style("background-color", "white")
+                .style("boarder", "solid")
+                .style("boarder-width", "2px")
+                .style("boarder-radius", "5px")
+                .style("padding", "5px");
+  
+// Three function that change the tooltip when user hover / move / leave a cell
+function mouseover(event, d) {
+
+    // get pointer position
+    var xy = d3.pointer(event, svg.node())
+
+    d3.select("#tooltip")
+        .style("opacity", 1)
+        .html(`Correlation: ${d.Correlation}`)
+        .style("left", (xy[0]) + "px")
+        .style("top", (xy[1]-50) + "px");
+};
+
+var mousemove = function(event, d) {
+    //console.log("event:", event)
+    Tooltip
+      .html("The exact value of<br>this cell is: " + d.Correlation)
+      .style("left", (event.x +70) + "px")
+      .style("top", (event.y) + "px")
+  }
+
+  var mouseleave = function(event, d) {
+    console.log("mouse leave:", mouseleave)
+    d3.select("#tooltip")
+        .style("opacity", 0)
+  }
+
 var textsAndNodes = svg
-    .append("g")
     .selectAll("g")
     .data(graphData.nodes)
     .enter()
     .append("g")
-    .filter(function(d){ 
-        console.log(d, d.Correlation, +corrMinimumDisplay.textContent)
-        return d.Correlation >= +corrMinimumDisplay.textContent})
+    // .filter(function(d){ 
+    //     console.log(d, d.Correlation, +corrMinimumDisplay.textContent)
+    //     return d.Correlation >= +corrMinimumDisplay.textContent})
     .call(drag)
-    .on("click", clicked);
+    .on("click", clicked)
+    .on("mouseover", mouseover)
+    .on("mousemove", mousemove)
+    .on("mouseout", mouseleave);
 
-
-//textsAndNodes = textsAndNodes.filter(function(d){ return d.Correlation >= corrMinValue })
-
+// specify the circle SVGs as node class
+// style based on correlation value
 var circles = textsAndNodes
     .append("circle")
     .attr("class", "node")
     .attr("r", function(d){
-        return d.Correlation * 100;
+        return nodeScale(Math.abs(d.Correlation));
     })
-    .attr("fill", "steelblue")
-    .attr("stroke", "black")
-    .attr("stroke-width", "2")
-    ;
+    // set fill depending on correlation value
+    .attr("fill", function(d){
+        if (d.Correlation < 0){
+            return "grey";
+        }
+        else {
+            return "#0C5E98";
+        }
+    })
+    // set stroke based on correlation value
+    .attr("stroke", function(d){
+        if (d.Correlation < 0){
+            return "black"
+        }
+        else {
+            return "black" //"#003466"
+        }
+    });
 
+// specify texts
 var texts = textsAndNodes.append("text")
                          .attr("class", "text")
                          .text(function(d){return d.name;})
@@ -174,22 +243,6 @@ function ticked() {
     textsAndNodes.attr("transform", function(d){
         return "translate(" + d.x + ", " + d.y + ")";
     });
-
-    // links
-    // .attr("x1", function(d){
-    //     return d.source.x;
-    // })
-    // .attr("y1", function(d){
-    //     return d.source.y;
-    // })
-    // .attr("x2", function(d){
-    //     return d.target.x;
-    // })
-    // .attr("x1", function(d){
-    //     return d.target.y;
-    // });
-
-    // console.log(simulation.alpha());
 };
 
 
@@ -207,7 +260,7 @@ function updateVisualization(correlationThreshold) {
 }
 
 
-// get slider
+// Define slider
 var slider = document.getElementById('corrRange');
 
 // Function to update the slider position
@@ -223,16 +276,11 @@ slider.addEventListener('input', function() {
     updateSliderPosition(+this.value);
 });
 
-
-
-
 // Add event listener to the slider
 document.getElementById('corrRange').addEventListener('input', function() {
     var correlationThreshold = +this.value; // Convert slider value to a number
     updateVisualization(correlationThreshold);
 });
-
-
 
 function dragStart(event, d) {
       {
@@ -241,7 +289,6 @@ function dragStart(event, d) {
         d.fy = d.y;
         }
     };
-
 
 function dragged(event, d) {
     d.fx = event.x;
@@ -262,79 +309,42 @@ function dragEnded(event, d) {
     }
 };
 
-function clicked(event, d) {
+function clicked(event, d, limit = 1) {
         var circle = d3.select(this).select("circle");
-        // Check if the node is already selected (red fill color)
-        var isSelected = circle.attr("fill") === "#D72862";
+        
+        // check if the node is selected
+        var isSelected = circle.attr("class") === "selectedNode"
+        
+        // collect selected nodes
+        const selectedNodes = d3.selectAll("circle.selectedNode");
+        
+        // make sure the number of selected nodes is less than the limit
+        const underNodeClassCapacity = selectedNodes.size() < limit;
 
-        // Toggle node color
-        if (isSelected) {
-            // If already selected, turn it off
-            circle.attr("fill", "steelblue")
-            circle.attr("stroke", "black");
-        } else {
-            // If not selected, turn it on
-            circle.attr("fill", "#D72862")
-            circle.attr("stroke", "white");
+        // Toggle node color //
+        
+        // If not selected and under capacity limit, turn it on
+        if (underNodeClassCapacity) {
+            circle.attr("class", "selectedNode");
+            //selectedNodes.attr("class", "node");
         }
+
+        // if node is selected and clicked again, turn it off
+        else if (isSelected) {
+            circle.attr("class", "node");
+        }
+        
+        ;
 };
 
-// define strength scale
-// var strengthScale = d3.scaleLinear([d3.min(graphData.links, function(d) {return d.value;}),
-//                                     d3.max(graphData.links, function(d) {return d.value;})],
-//                                     [-100, 100]); // add strength scale
-
-
-// work on node-specific forces
-// l[0] is the source [IMPORTANT], not sure how to implement reference by string (l['source'])
-// for (let i = 0; i < graphData.links.length - 1; i++){
-//     console.log(i)
-//     let l = graphData.links[i]
-//     console.log("l:", l, l['source'], l['target'])
-//     let sourceNode = graphData.nodes.find(function(node) {return node.name === l['source'];})
-//     let targetNode = graphData.nodes.find(function(node) {return node.name === l['target'];})
-//     let forceStrength = strengthScale(l['value'])
-
-//     console.log("source:", sourceNode, "target:", targetNode, "forceStrength:", forceStrength)
-//     // console.log(graphData.nodes.find(function(node) {return node.name === l[0];}));
-//     // console.log("raw strength:", l['value'], "scaled strength:", strengthScale(l['value'])) 
-//     //console.log("test access of nodes:", graphData.nodes.find(function(node) {return node.name === 'GBDC';}))
-//     //console.log("node 0:", graphData.nodes[0], "node 1:", graphData.nodes[1])
-//    // try to get sim force running with a single example, then advance to iterative process
-//     simulation.force("charge", isolate(d3.forceManyBody()
-//                                          .strength(forceStrength),
-//                                                     sourceNode,
-//                                                     targetNode)
-//                                 );
-                        //isolate(d3.forceManyBody().strength(100), graphData.nodes[0], graphData.nodes[1]))
-                    
-    // simulation.force(graphData.nodes[i].id.concat(graphData.nodes[j].id), 
-    //                      isolate(d3.forceManyBodyReuse().strength(-30), graphData.nodes[i], graphData.nodes[j])
-    
-    //simulation.force(graphData.nodes[l.source])
-//};
-
-// ##### ORIGINAL EXAMPLE ######
-// data.nodes contains all nodes
-// for(let i = 0; i < graphData.nodes.length - 1; i++){
-//     for(let j = i + 1; j < graphData.nodes.length; j++){
-//         console.log("i", i, "j", j)
-//         simulation.force(graphData.nodes[i].id.concat(graphData.nodes[j].id), 
-//                          isolate(d3.forceManyBodyReuse().strength(-30), graphData.nodes[i], graphData.nodes[j]));
-//     }
-// }
-
-// function isolate(force, nodeA, nodeB) {
-//     let initialize = force.initialize;
-//     force.initialize = function() { initialize.call(force, [nodeA, nodeB]); };
-//     return force;
-// }
-
-
-    // Close data function and catch error if it exists
+// Close data function and catch error if it exists
 }).catch(function(error) {
         console.log(error);
 });
+
+}).catch(function(error) {
+            console.error("Error loading file 2:", error);
+        });
 
 </script>
 </div>
