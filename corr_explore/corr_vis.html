@@ -29,7 +29,6 @@
         <p>Min. Correlation: <span id="corrMinValue">0.0</span></p>    
     </div>
 <script>
-
     
 //   // Add an event listener to the range slider
 //   const rangeSlider = document.getElementById("corrRange");
@@ -47,8 +46,6 @@
 //   }
 // );
 </script>
-
-
 
 <script>var slider = document.getElementById("corrRange");</script>
       </div>
@@ -309,33 +306,80 @@ function dragEnded(event, d) {
     }
 };
 
+
 function clicked(event, d, limit = 1) {
+        // get the selected circle
         var circle = d3.select(this).select("circle");
-        
-        // check if the node is selected
-        var isSelected = circle.attr("class") === "selectedNode"
-        
+        var text = d3.select(this).select("text")
         // collect selected nodes
-        const selectedNodes = d3.selectAll("circle.selectedNode");
-        
-        // make sure the number of selected nodes is less than the limit
-        const underNodeClassCapacity = selectedNodes.size() < limit;
+        var selectedNodes = d3.selectAll("circle.selectedNode");
+        var selectedText = d3.selectAll("text.selectedText");
 
-        // Toggle node color //
-        
-        // If not selected and under capacity limit, turn it on
-        if (underNodeClassCapacity) {
-            circle.attr("class", "selectedNode");
-            //selectedNodes.attr("class", "node");
-        }
+        // convert the currently selected node to selectedNode class
+        circle.attr("class", "selectedNode");
+        text.attr("class", "selectedText");
 
-        // if node is selected and clicked again, turn it off
-        else if (isSelected) {
-            circle.attr("class", "node");
-        }
-        
-        ;
+        // if there is already one selected node
+        if (selectedNodes.size() === 1) {
+            // convert the previously selected node back to normal
+            selectedNodes.attr("class", "node");
+            selectedText.attr("class", "text")
+            };
 };
+
+
+// function clicked(event, d, limit = 1) {
+//         var circle = d3.select(this).select("circle");
+        
+//         // check if the node is selected
+//         var isSelected = circle.attr("class") === "selectedNode"
+        
+//         // collect selected nodes
+//         const selectedNodes = d3.selectAll("circle.selectedNode");
+        
+//         // make sure the number of selected nodes is less than the limit
+//         const underNodeClassCapacity = selectedNodes.size() < limit;
+
+//         // Toggle node color //
+        
+//         // If not selected and under capacity limit, turn it on
+//         if (underNodeClassCapacity) {
+//             circle.attr("class", "selectedNode");
+//             //selectedNodes.attr("class", "node");
+//         }
+
+//         // if node is selected and clicked again, turn it off
+//         else if (isSelected) {
+//             circle.attr("class", "node");
+//         };
+// };
+
+
+// function clicked(event, d, limit = 1) {
+//         var circle = d3.select(this).select("circle");
+        
+//         // check if the node is selected
+//         var isSelected = circle.attr("class") === "selectedNode"
+        
+//         // collect selected nodes
+//         const selectedNodes = d3.selectAll("circle.selectedNode");
+        
+//         // make sure the number of selected nodes is less than the limit
+//         const underNodeClassCapacity = selectedNodes.size() < limit;
+
+//         // Toggle node color //
+        
+//         // If not selected and under capacity limit, turn it on
+//         if (underNodeClassCapacity) {
+//             circle.attr("class", "selectedNode");
+//             //selectedNodes.attr("class", "node");
+//         }
+
+//         // if node is selected and clicked again, turn it off
+//         else if (isSelected) {
+//             circle.attr("class", "node");
+//         };
+// };
 
 // Close data function and catch error if it exists
 }).catch(function(error) {
