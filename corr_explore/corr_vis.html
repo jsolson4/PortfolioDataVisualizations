@@ -189,6 +189,8 @@ var mousemove = function(event, d) {
         .style("opacity", 0)
   }
 
+console.log(graphData.links)
+
 var textsAndNodes = svg
     .selectAll("g")
     .data(graphData.nodes)
@@ -199,6 +201,7 @@ var textsAndNodes = svg
     //     return d.Correlation >= +corrMinimumDisplay.textContent})
     .call(drag)
     .on("click", clicked)
+    //.on("click", updateCenter)
     .on("mouseover", mouseover)
     .on("mousemove", mousemove)
     .on("mouseout", mouseleave);
@@ -228,7 +231,74 @@ var circles = textsAndNodes
         else {
             return "black" //"#003466"
         }
+    }).on("click", updateNodeRadii)
+
+// Sort of got this node update working.
+// need to figure out what the node value of the selected node should be
+// also need to update everything else in the file (hover correlation, collide force, etc.)...
+// need to create a 'deselect' function
+
+// Define a function to update node radii based on link correlation
+function updateNodeRadii(event, d) {
+
+    const allLinks = links.filter(link => link.source === d.name)
+    const tempScale = d3.scaleLinear(d3.extent(allLinks, d => Math.abs(d.correlation)), [10, 50])
+
+    circles.each(function(e) {
+        // for non-selected nodes, update with correlation value
+        const connectedLinks = links.filter(link => link.source === d.name && link.target === e.name);
+        const linkCorr = connectedLinks[0].correlation
+
+        console.log("connectedLinks:", connectedLinks)
+
+        //const maxCorrelation = d3.max(connectedLinks, link => link.correlation);
+        //const radiusScale = d3.scaleLinear().domain([0, 1]).range([5, 20]); // Define a scale for radius
+        //const newRadius = maxCorrelation ? nodeScale(maxCorrelation) : 10; // Default radius if no correlation
+        d3.select(this).attr("r", tempScale(Math.abs(linkCorr)));
     });
+}
+
+// Call the function to update node radii initially
+//updateNodeRadii();
+
+//     .on("click", function(event, d) {
+//     updateNodeSizes(d);
+//     });
+
+// // Define a function to update node positions based on selected node
+// function updateNodeSizes(selectedNode) {
+//     const selectedLinks = links.filter(link => link.source === selectedNode.name || link.target === selectedNode.name);
+//     circles.each(function(d) {
+        
+//         console.log("d:", d)
+
+//         if (d.name !== selectedNode.name) {
+//             const relatedLinks = selectedLinks.filter(link => link.source === d.id || link.target === d.id);
+//             const correlationValue = relatedLinks.length > 0 ? relatedLinks[0].correlation : 0;
+            
+//             // create temp node scale
+
+//             // Update node position based on correlation value
+//             d3.select(this)
+//                 .attr("r", function(d){
+//                     return nodeScale(Math.abs(d.correlation));
+//                     });
+//         }
+//     });
+// }
+
+
+// update correlation function
+function updateCorrelation(event, d){
+    console.log("event:", event, "d:", d)
+
+
+    // array.forEach(element => {
+        
+    // });
+
+}
+
 
 // specify texts
 var texts = textsAndNodes.append("text")
@@ -307,9 +377,19 @@ function dragEnded(event, d) {
 };
 
 
+
+// function updateCenter(d){
+//     console.log("update center", d.name)
+// }
+
+
 function clicked(event, d, limit = 1) {
+
         // get the selected circle
         var circle = d3.select(this).select("circle");
+        console.log("d:", d)
+        //updateCenter(d)
+
         var text = d3.select(this).select("text")
         // collect selected nodes
         var selectedNodes = d3.selectAll("circle.selectedNode");
