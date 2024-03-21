@@ -74,7 +74,7 @@ d3.dsv(',', 'data/ticker_corr3.csv', function(d) {
       return {
           source: d.source,
           target: d.target,
-          correlation: +d.Correlation,
+          correlation: Math.round(+d.Correlation * 100)/100,
           value: isNaN(d.norm_corr) ? 0 : +d.norm_corr,
         }     
 }).then(function(data) {
@@ -109,19 +109,8 @@ var graphData = {nodes:nodes, links:links};
 console.log("width:", width/2, "height:", height/2)
 
 // function to scale the nodes to the absolute value of the correlatin
-var nodeScale = d3.scaleLinear(d3.extent(graphData.nodes, d => Math.abs(d.Correlation)), [10, 50])
-
-// render issue was due to setting strength on forceCenter too high
-var simulation = d3
-        .forceSimulation(graphData.nodes)
-        .force("charge", d3.forceManyBody().strength(4))//5
-        .force("center", d3.forceCenter(width/2, height/2).strength(1))//1 
-        .force("collide", 
-            d3.forceCollide(function(d){
-                return nodeScale(Math.abs(d.Correlation));
-            })
-            .strength(0.8))//0.7
-        .on("tick", ticked);
+//var nodeScale = d3.scaleLinear(d3.extent(graphData.nodes, d => Math.abs(d.Correlation)), [10, 50])
+var nodeScale = d3.scaleLinear(d3.extent(graphData.links, d => Math.abs(d.correlation)), [10, 75])
 
 
 // Define a drag behavior using D3's drag function, which enables drag interactions on SVG elements.
@@ -231,30 +220,104 @@ var circles = textsAndNodes
         else {
             return "black" //"#003466"
         }
-    }).on("click", updateNodeRadii)
+    }).on("click", updateNodeRadiusToLinkCorr)
+
+
+// render issue was due to setting strength on forceCenter too high
+var simulation = d3
+        .forceSimulation(graphData.nodes)
+        .force("charge", d3.forceManyBody().strength(4))//5
+        .force("center", d3.forceCenter(width/2, height/2).strength(1))//1 
+        .force("collide", //d3.forceCollide().radius(d => d.radius)
+            d3.forceCollide(function(d){
+                return nodeScale(Math.abs(d.Correlation)); //d.Correlation
+            })
+            .strength(0.8))//0.7
+        .on("tick", ticked);
+
 
 // Sort of got this node update working.
 // need to figure out what the node value of the selected node should be
 // also need to update everything else in the file (hover correlation, collide force, etc.)...
 // need to create a 'deselect' function
 
-// Define a function to update node radii based on link correlation
-function updateNodeRadii(event, d) {
 
+// Function to update forceCollide after node radius change
+function updateForceCollide() {
+    // Update the radius accessor function of forceCollide
+    simulation.force("collide", d3.forceCollide(function(d){
+                return nodeScale(Math.abs(d.Correlation)); //d.Correlation
+            })
+            .strength(0.8)); // Example update
+    // Restart the simulation to apply the changes
+    simulation.alpha(1).restart();
+}
+
+
+// create function to convert nodes to their original values on 'unclick'
+function resetNodeCorrelations(nodes){
+    graphData.nodes.forEach(function(d){
+        console.log("node name:", node.name, "d.name:", d.name)
+        d.Correlation = nodes.filter(node => node.name === d.name).Correlation
+        console.log("d:", d, d.name)
+
+
+    })
+};
+
+
+console.log("nodes:", graphData.nodes)
+
+// updateNodeRadiusToLinkCorr
+//
+// Define a function to update node radii based on link correlation
+function updateNodeRadiusToLinkCorr(event, d) { // updateNodeRadii
+
+    // get all relevant links
     const allLinks = links.filter(link => link.source === d.name)
-    const tempScale = d3.scaleLinear(d3.extent(allLinks, d => Math.abs(d.correlation)), [10, 50])
+
+    // extract corrrelation values into an array
+    const correlationArray = allLinks.map(link => link.correlation)
 
     circles.each(function(e) {
+
+        // size selected node
+        if (d.name === e.name){
+            //console.log("node.name:", node.name)
+            var node = graphData.nodes.filter(node => d.name === node.name).Correlation
+            console.log("selected node:", node)
+            d3.select(this).attr("r", nodeScale(Math.abs(node[0].Correlation)))
+        }
+
+        // size all other nodes
+        else {
         // for non-selected nodes, update with correlation value
         const connectedLinks = links.filter(link => link.source === d.name && link.target === e.name);
         const linkCorr = connectedLinks[0].correlation
 
-        console.log("connectedLinks:", connectedLinks)
+        //console.log("connectedLinks:", connectedLinks)
+        d3.select(this)
+          .attr("r", nodeScale(Math.abs(linkCorr)))
+          // set fill depending on the new correlation value (linkCorr)
+          .attr("fill", function(d){
+                if (linkCorr < 0){
+                    return "grey";
+            }
+            else {
+                return "#0C5E98";
+            }
+        });// here
 
-        //const maxCorrelation = d3.max(connectedLinks, link => link.correlation);
-        //const radiusScale = d3.scaleLinear().domain([0, 1]).range([5, 20]); // Define a scale for radius
-        //const newRadius = maxCorrelation ? nodeScale(maxCorrelation) : 10; // Default radius if no correlation
-        d3.select(this).attr("r", tempScale(Math.abs(linkCorr)));
+        // Find the index of the node with name 'e.name'
+        const index = graphData.nodes.findIndex(node => node.name === e.name)
+        //console.log("e.name:", e.name, "index:", index, "node at index:", nodes[index], "linkCorr", linkCorr)
+
+        graphData.nodes[index].Correlation = linkCorr
+        //console.log("show index after update:", nodes[index])
+        }
+
+        // update simulation to reflect new node sizes
+        updateForceCollide() 
     });
 }
 
@@ -383,14 +446,20 @@ function dragEnded(event, d) {
 // }
 
 
-function clicked(event, d, limit = 1) {
+// NOTES ON CLICKED LOGIC
+// currently node values are updated every time a node is clicked
+// we have two cases for updates:
+// 1) a node is highlighted: run 
+
+function clicked(event, d) {
 
         // get the selected circle
         var circle = d3.select(this).select("circle");
-        console.log("d:", d)
+        console.log("clicked d:", d)
         //updateCenter(d)
 
         var text = d3.select(this).select("text")
+        
         // collect selected nodes
         var selectedNodes = d3.selectAll("circle.selectedNode");
         var selectedText = d3.selectAll("text.selectedText");
@@ -399,12 +468,27 @@ function clicked(event, d, limit = 1) {
         circle.attr("class", "selectedNode");
         text.attr("class", "selectedText");
 
+
+    // WAS WORKING TO REFINE CLICKED LOGIC HERE //
+        // // is node is unselected...
+        // if (selectedNodes.size() === undefined){
+        //     console.log("no node selected, run resetNodeCorrelations")
+        //     resetNodeCorrelations(nodes);
+        // }
+
+        // else {
+        //     updateNodeRadii(event, d);
+        // };
+
         // if there is already one selected node
         if (selectedNodes.size() === 1) {
             // convert the previously selected node back to normal
             selectedNodes.attr("class", "node");
             selectedText.attr("class", "text")
             };
+
+        // check if any nodes are selected at the end of the event
+
 };
 
 
