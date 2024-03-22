@@ -19,7 +19,6 @@
         <!-- Content for the left column goes here -->
         <h2>Corr Explore</h2>
         <p><i>This is an exciting new way to visualize portfolio correlation.</i></p>
-        \
     
         <div class="slidecontainer">
             <input type="range" min="0" max="1" value="0.0" 
@@ -83,7 +82,7 @@ d3.dsv(',', 'data/ticker_corr3.csv', function(d) {
 
     // read in the node data
     d3.dsv(',', 'data/ticker_nodes3.csv', function(d) {
-    console.log(d.name, d.Correlation)
+    //console.log(d.name, d.Correlation)
       return {
           name: d.name,
           Correlation: +d.Correlation,
@@ -178,7 +177,7 @@ var mousemove = function(event, d) {
         .style("opacity", 0)
   }
 
-console.log(graphData.links)
+//console.log(graphData.links)
 
 var textsAndNodes = svg
     .selectAll("g")
@@ -205,22 +204,11 @@ var circles = textsAndNodes
     })
     // set fill depending on correlation value
     .attr("fill", function(d){
-        if (d.Correlation < 0){
-            return "grey";
-        }
-        else {
-            return "#0C5E98";
-        }
-    })
+        return d.Correlation < 0 ?  "grey" : "#0C5E98";}
+    )
     // set stroke based on correlation value
-    .attr("stroke", function(d){
-        if (d.Correlation < 0){
-            return "black"
-        }
-        else {
-            return "black" //"#003466"
-        }
-    }).on("click", updateNodeRadiusToLinkCorr)
+    .attr("stroke", "black")
+    .on("click", updateNodeRadiusToLinkCorr) // this was working
 
 
 // render issue was due to setting strength on forceCenter too high
@@ -255,9 +243,10 @@ function updateForceCollide() {
 
 
 // create function to convert nodes to their original values on 'unclick'
-function resetNodeCorrelations(nodes){
+function resetNodeCorrelations(graphData){
     graphData.nodes.forEach(function(d){
         console.log("node name:", node.name, "d.name:", d.name)
+        console.log("existing corr:", d.Correlation, "new corr:", nodes.filter(node => node.name === d.name).Correlation)
         d.Correlation = nodes.filter(node => node.name === d.name).Correlation
         console.log("d:", d, d.name)
 
@@ -267,6 +256,17 @@ function resetNodeCorrelations(nodes){
 
 
 console.log("nodes:", graphData.nodes)
+
+
+function updateNodeState(event, d){
+    // if node is selected
+
+    // if unselected
+
+    // if a different node is selected
+
+}
+
 
 // updateNodeRadiusToLinkCorr
 //
@@ -285,7 +285,7 @@ function updateNodeRadiusToLinkCorr(event, d) { // updateNodeRadii
         if (d.name === e.name){
             //console.log("node.name:", node.name)
             var node = graphData.nodes.filter(node => d.name === node.name).Correlation
-            console.log("selected node:", node)
+            //console.log("selected node:", node)
             d3.select(this).attr("r", nodeScale(Math.abs(node[0].Correlation)))
         }
 
@@ -300,13 +300,8 @@ function updateNodeRadiusToLinkCorr(event, d) { // updateNodeRadii
           .attr("r", nodeScale(Math.abs(linkCorr)))
           // set fill depending on the new correlation value (linkCorr)
           .attr("fill", function(d){
-                if (linkCorr < 0){
-                    return "grey";
-            }
-            else {
-                return "#0C5E98";
-            }
-        });// here
+                return linkCorr < 0 ? "grey":"#0C5E98";
+            });
 
         // Find the index of the node with name 'e.name'
         const index = graphData.nodes.findIndex(node => node.name === e.name)
@@ -352,15 +347,12 @@ function updateNodeRadiusToLinkCorr(event, d) { // updateNodeRadii
 
 
 // update correlation function
-function updateCorrelation(event, d){
-    console.log("event:", event, "d:", d)
+// function updateCorrelation(event, d){
+//     console.log("event:", event, "d:", d)
+//     // array.forEach(element => {   
+//     // });
 
-
-    // array.forEach(element => {
-        
-    // });
-
-}
+// }
 
 
 // specify texts
@@ -377,17 +369,17 @@ function ticked() {
 
 
 // Define a function to update the visualization based on correlation threshold
-function updateVisualization(correlationThreshold) {
-    // Filter nodes based on the correlation threshold
-    nodes = nodes.filter(function(node) {
-        console.log('update vis fx:', node.Correlation, "corr threshold:", correlationThreshold, "logic:", node.Correlation < correlationThreshold)
-        return node.Correlation < correlationThreshold;
-    });
+// function updateVisualization(correlationThreshold) {
+//     // Filter nodes based on the correlation threshold
+//     nodes = nodes.filter(function(node) {
+//         console.log('update vis fx:', node.Correlation, "corr threshold:", correlationThreshold, "logic:", node.Correlation < correlationThreshold)
+//         return node.Correlation < correlationThreshold;
+//     });
 
     // Update your visualization to display only the filtered nodes
     // Your visualization update code goes here
     // For example, you might update the node positions or remove nodes from the visualization
-}
+//}
 
 
 // Define slider
@@ -455,39 +447,51 @@ function clicked(event, d) {
 
         // get the selected circle
         var circle = d3.select(this).select("circle");
-        console.log("clicked d:", d)
+        console.log("clicked d:", d, "event:", event)
         //updateCenter(d)
-
+        
         var text = d3.select(this).select("text")
         
         // collect selected nodes
-        var selectedNodes = d3.selectAll("circle.selectedNode");
+        var selectedNode = d3.selectAll("circle.selectedNode");
         var selectedText = d3.selectAll("text.selectedText");
+
+        console.log("selected node size", selectedNode.size(), "circle size", circle.size(), "circle:", circle, selectedNode)
 
         // convert the currently selected node to selectedNode class
         circle.attr("class", "selectedNode");
         text.attr("class", "selectedText");
 
-
-    // WAS WORKING TO REFINE CLICKED LOGIC HERE //
-        // // is node is unselected...
-        // if (selectedNodes.size() === undefined){
-        //     console.log("no node selected, run resetNodeCorrelations")
-        //     resetNodeCorrelations(nodes);
-        // }
-
-        // else {
-        //     updateNodeRadii(event, d);
-        // };
+        // Node initially selected
+        if (circle.size() === 1 && selectedNode.size() === 0){
+            console.log("INITIAL NODE SELECTION")
+            //resetNodeCorrelations(nodes);
+        };
 
         // if there is already one selected node
-        if (selectedNodes.size() === 1) {
+        if (selectedNode.size() === 1) {
+
             // convert the previously selected node back to normal
-            selectedNodes.attr("class", "node");
+            selectedNode.attr("class", "node");
             selectedText.attr("class", "text")
             };
 
-        // check if any nodes are selected at the end of the event
+        // check if any nodes remain selected
+        var selectedNodeEndState = d3.selectAll("circle.selectedNode")
+
+       // Node selection transferred
+       if (circle.size() === 1 && selectedNode.size() === 1 && selectedNodeEndState.size() === 1){
+            console.log("NODE SELECTION TRANSFER")
+            //resetNodeCorrelations(nodes);
+        };
+
+        // if no nodes remain selected... perform action!
+        if (selectedNodeEndState.size() === 0){
+            console.log("NODES HAVE BEEN UNSELECTED")
+            
+        };
+        
+
 
 };
 
