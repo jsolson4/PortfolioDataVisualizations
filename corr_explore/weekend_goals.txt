@@ -1,0 +1,12 @@
+
+0. Tooltip still appears problematic when hovering... doesn't appear to be updating
+
+1. Add Long/short to the portfolio
+2. Add long/short dropdown to the left column (make long the default)
+3. add an average correlation window (upper right hand corner?)
+4. add a descriptive title that changes on click
+4. A) 'Average correlation of Securities within the {side} Portfolio'
+4. B) 'Correlation to {selected security}'
+5. Create node window
+6. Move functions to javascript script file?
+7. Add correlation to benchmark
