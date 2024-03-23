@@ -161,7 +161,7 @@ function mouseover(event, d) {
 
     d3.select("#tooltip")
         .style("opacity", 1)
-        .html(`Correlation: ${d.Correlation}`)
+        .html(`Node:${d.name}<br>Correlation: ${d.Correlation}`)
         .style("left", (xy[0]) + "px")
         .style("top", (xy[1]-50) + "px");
 };
@@ -311,6 +311,21 @@ updateForceCollide();
 console.log("nodes:", graphData.nodes)
 
 
+// repeatable fx to update correlation
+function updateCircles(selectedNodeName, newCorr){
+    
+    // update correlation value in graphData.nodes
+    graphData.nodes.filter(node => node.name === selectedNodeName)[0].Correlation = newCorr
+
+    // update circle size
+    d3.select(this)
+    .attr("r", nodeScale(Math.abs(newCorr)))
+    .attr("fill", function(d){
+        return newCorr < 0 ? "grey":"#0C5E98";
+    });
+};
+
+
 // updateNodeRadiusToLinkCorr
 //
 // Define a function to update node radii based on link correlation
@@ -326,37 +341,54 @@ function updateNodeRadiusToLinkCorr(event, d) { // updateNodeRadii
 
         // size selected node
         if (d.name === e.name){
-            console.log("d.name:", d.name, "e.name:", e.name)
-            //console.log("node.name:", node.name)
-            var node = origNodes.filter(node => d.name === node.name)[0]
-            console.log("selected node:", node)//, node[0].Correlation
-            d3.select(this).attr("r", nodeScale(Math.abs(node.Correlation)))
+            
+            // find the new correlation value
+            const newCorr = origNodes.filter(node => node.name === d.name)[0].Correlation
+            console.log("new corr selected node:", newCorr)
+            // update correlation value in graphData.nodes
+            graphData.nodes.filter(node => node.name === d.name)[0].Correlation = newCorr
+
+            // update the circle sizes
+            updateCircles.call(this, d.name, newCorr);
+            /////  CAN I MAKE THIS INTO A FUNCTION !!!!!!! ///////
+            // update correlation value in graphData.nodes
+            // graphData.nodes.filter(node => node.name === d.name)[0].Correlation = newCorr
+            // // update circle size
+            // d3.select(this)
+            //   .attr("r", nodeScale(Math.abs(newCorr)))
+            //   .attr("fill", function(d){
+            //     return newCorr < 0 ? "grey":"#0C5E98";
+            // });
+              
         }
 
         // size all other nodes
         else {
         // for non-selected nodes, update with correlation value
         const connectedLinks = links.filter(link => link.source === d.name && link.target === e.name);
-        const linkCorr = connectedLinks[0].correlation
+        
+        // new corr is extracted from the set of links
+        const newCorr = connectedLinks[0].correlation
 
-        //console.log("connectedLinks:", connectedLinks)
-        d3.select(this)
-          .attr("r", nodeScale(Math.abs(linkCorr)))
-          // set fill depending on the new correlation value (linkCorr)
-          .attr("fill", function(d){
-                return linkCorr < 0 ? "grey":"#0C5E98";
-            });
+        updateCircles.call(this, d.name, newCorr)
+
+        // d3.select(this)
+        //   .attr("r", nodeScale(Math.abs(linkCorr)))
+        //   // set fill depending on the new correlation value (linkCorr)
+        //   .attr("fill", function(d){
+        //         return linkCorr < 0 ? "grey":"#0C5E98";
+        //     });
 
         // Find the index of the node with name 'e.name'
         const index = graphData.nodes.findIndex(node => node.name === e.name)
         //console.log("e.name:", e.name, "index:", index, "node at index:", nodes[index], "linkCorr", linkCorr)
 
-        graphData.nodes[index].Correlation = linkCorr
+        graphData.nodes[index].Correlation = newCorr//linkCorr
         //console.log("show index after update:", nodes[index])
         }
 
         // update simulation to reflect new node sizes
-        updateForceCollide() 
+        updateForceCollide();
     });
 }
 
@@ -469,9 +501,6 @@ function clicked(event, d) {
             
             // WHEN A NODE IS TRANSITIONED...
             // It needs to revert to it's normal size in origNodes
-
-
-            updateNodeRadiusToLinkCorr(event, d)
             };
 
         // check if any nodes remain selected
@@ -480,7 +509,7 @@ function clicked(event, d) {
        // Node selection transferred
        if (circle.size() === 1 && selectedNode.size() === 1 && selectedNodeEndState.size() === 1){
             console.log("NODE SELECTION TRANSFER")
-            
+            updateNodeRadiusToLinkCorr(event, d)
             //resetNodeCorrelations(nodes);
         };
 
