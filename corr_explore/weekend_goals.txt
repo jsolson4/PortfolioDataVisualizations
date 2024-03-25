@@ -10,3 +10,8 @@
 5. Create node window
 6. Move functions to javascript script file?
 7. Add correlation to benchmark
+
+
+NOTE: seems like there is still an issue with the tooltip...
+Tooltip may just need to auto-refresh. Looks like it retains the initial value until
+the hover is ended and then restarted... I'm sure this problem has been solved before.
