@@ -53,14 +53,15 @@
 <!-- Create a div where the graph will take place -->
 <div class="right-column">
 
-<svg id = "graph-container" width="800" height = "800"></svg>
-
+<!-- <svg id = "graph-container" width="800" height = "800"></svg> -->
+<svg id = "graph-container" width="1100" height = "800"></svg>
 <div class="tooltip" id="tooltip"></div>
 
 <script>
 // select the svg container; add mouseover catching
 var svg = d3.select("#graph-container");
 var margin = {top: 20, right: 20, bottom: 30, left: 50}
+//console.log("svg width:", +svg.attr("width"), "height:", +svg.attr("height"), svg)
 var width = +svg.attr("width") - margin.left - margin.right;
 var height = +svg.attr("height") - margin.top - margin.bottom;
 
@@ -111,7 +112,7 @@ console.log("width:", width/2, "height:", height/2)
 
 // function to scale the nodes to the absolute value of the correlatin
 //var nodeScale = d3.scaleLinear(d3.extent(graphData.nodes, d => Math.abs(d.Correlation)), [10, 50])
-var nodeScale = d3.scaleLinear(d3.extent(graphData.links, d => Math.abs(d.correlation)), [10, 75])
+var nodeScale = d3.scaleLinear(d3.extent(graphData.links, d => Math.abs(d.correlation)), [8, 75])
 
 
 // Define a drag behavior using D3's drag function, which enables drag interactions on SVG elements.
@@ -315,6 +316,7 @@ console.log("nodes:", graphData.nodes)
 function updateCircles(selectedNodeName, newCorr){
     
     // update correlation value in graphData.nodes
+    // IS THIS NECESSARY?
     graphData.nodes.filter(node => node.name === selectedNodeName)[0].Correlation = newCorr
 
     // update circle size
@@ -380,6 +382,7 @@ function updateNodeRadiusToLinkCorr(event, d) { // updateNodeRadii
         //     });
 
         // Find the index of the node with name 'e.name'
+        console.log("d.name:", d.name, "e.name:", e.name)
         const index = graphData.nodes.findIndex(node => node.name === e.name)
         //console.log("e.name:", e.name, "index:", index, "node at index:", nodes[index], "linkCorr", linkCorr)
 
