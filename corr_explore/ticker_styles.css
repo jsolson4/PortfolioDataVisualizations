@@ -1,11 +1,6 @@
-.link {
-    fill: none;
-    stroke: #666;
-    /*stroke-width: 1.5px;*/
-}
-
 .node{
     stroke-width:1.5px;
+    stroke:black;
 }
 
 .selectedNode {
@@ -75,6 +70,8 @@
     left: 20%; /* Align to the left of the viewport */
     background-color: #6B6F72 ;
     display: inline-block; /*Allows for separation of divs*/
+    border:4px solid black;
+    
 
 }
 
