@@ -4,7 +4,6 @@
 }
 
 .selectedNode {
- /* fill:#D72862; */
  stroke:white;
  stroke-width:2.5px;
 }
@@ -14,7 +13,6 @@
     stroke:2px;
     font-size: 16px;
     font-family: Arial, Helvetica, sans-serif, bold;
-    /* font-style:courier; */
     pointer-events: none;
     text-anchor: middle;
   }
@@ -24,32 +22,14 @@
     stroke:2px;
     font-size: 12px;
     font-family: "Arial Bold", "Helvetica Bold", sans-serif;
-    /* Arial, Helvetica, sans-serif; */
-    /* font-style:courier; */
     pointer-events: none;
     text-anchor: middle;
   }
-
-/* Reset default margin and padding for the body */
-/* .body {
-    margin: 0;
-    padding: 0;
-} */
-
-/* #327FB9 
-#012348 
-#003466 
-#262626 
-#6B6F72 
-#0C5E98 
-#D9D9D9 
-#F3F2F2 */
 
 /* Define styles for the left column */
 .left-column {
     width: 20%; /* Set the width to occupy 25% of the page */
     height: 100vh; /* Make the column full height of the viewport */
-    /*background-color: #EBEBEB; /* Set background color */
     position: fixed; /* Fix the position of the column */
     top: 0; /* Align to the top of the viewport */
     left: 0; /* Align to the left of the viewport */
@@ -70,7 +50,7 @@
     left: 20%; /* Align to the left of the viewport */
     background-color: #6B6F72 ;
     display: inline-block; /*Allows for separation of divs*/
-    border:4px solid black;
+    border:1px solid black;
     
 
 }
