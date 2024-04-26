@@ -53,11 +53,22 @@
 <!-- Create a div where the graph will take place -->
 <div class="right-column">
 
+<!-- Title and Average Correlation -->
+<!-- I hope to make this a dynamic thing where it has the default title with the average correlation
+    But then it will change the title and the average correlation value when someone clicks on a security -->
+<h2 id="my-heading" style="text-align: center;">Original heading text</h2>
+
 <!-- <svg id = "graph-container" width="800" height = "800"></svg> -->
 <svg id = "graph-container" width="1100" height = "800"></svg>
 <div class="tooltip" id="tooltip"></div>
 
 <script>
+
+// Default heading variable for the page
+var myHeading = document.querySelector('#my-heading');
+var defaultHeading = "Average Correlation of Securities within the Portfolio"
+myHeading.innerHTML = defaultHeading
+
 // select the svg container; add mouseover catching
 var svg = d3.select("#graph-container");
 var margin = {top: 20, right: 20, bottom: 30, left: 50}
@@ -89,6 +100,7 @@ d3.dsv(',', 'data/ticker_corr3.csv', function(d) {
           Correlation: +d.Correlation,
         }
 }).then(function(data2) {
+
 
 var nodes = data2;
 var origNodes = structuredClone(data2);
@@ -166,6 +178,7 @@ function mouseover(event, d) {
         .style("left", (xy[0]) + "px")
         .style("top", (xy[1]-50) + "px");
 };
+
 
 // var mousemove = function(event, d) {
 //     //console.log("event:", event)
@@ -260,6 +273,9 @@ function resetNodeCorrelations(graphData){
 
     // console.log("graphData nodes:", graphData.nodes, "nodes:", nodes, "origNodes:", origNodes)
     // console.log("origNodes:". origNodes)
+
+    // Return the heading to the default text when everything is reset
+    myHeading.innerHTML = defaultHeading
 
     // for each circle svg...
     circles.each(function(d) {
@@ -488,6 +504,9 @@ function clicked(event, d) {
         circle.attr("class", "selectedNode");
         text.attr("class", "selectedText");
 
+        // Change the heading based on the selected security
+        myHeading.innerHTML = "Correlation to " + d.name
+
         // Node initially selected
         if (circle.size() === 1 && selectedNode.size() === 0){
             console.log("INITIAL NODE SELECTION")
@@ -522,7 +541,6 @@ function clicked(event, d) {
             resetNodeCorrelations(graphData, origNodes)
             
         };
-        
 
 
 };
