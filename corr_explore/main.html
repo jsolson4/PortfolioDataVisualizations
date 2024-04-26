@@ -1,0 +1,249 @@
+
+<meta charset="utf-8">
+
+<!-- Class style sheet in linked in .css -->
+<link rel="stylesheet" href = "ticker_styles.css" type="text/css"/>
+
+<script src="https://unpkg.com/d3-force-boundary@0.0.1/dist/d3-force-boundary.min.js"></script>
+<script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+<script src="functions.js"></script>
+<!-- // Tutorial Link: https://www.youtube.com/watch?v=y2-sgZh49dQ -->
+
+<!-- Set title (correct placement?)-->
+<title>Correlation Explorer</title>
+
+<!-- Create left hand column-->
+<!-- Left Quarter Column -->
+<div class="left-column">
+    <div class="left-column-content">
+        <!-- Content for the left column goes here -->
+        <h2>Corr Explore</h2>
+        <p><i>This is an exciting new way to visualize portfolio correlation.</i></p>
+    
+        <div class="slidecontainer">
+            <input type="range" min="0" max="1" value="0.0" 
+                step = "0.01" class="slider" id="corrRange">
+                
+        <!-- Display the selected value -->
+        <p>Min. Correlation: <span id="corrMinValue">0.0</span></p>    
+    </div>
+
+<script>var slider = document.getElementById("corrRange");</script>
+      </div>
+</div>
+
+<!-- Create a div where the graph will take place -->
+<div class="right-column">
+
+<!-- <svg id = "graph-container" width="800" height = "800"></svg> -->
+<svg id = "graph-container" width="1100" height = "800"></svg>
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// select the svg container; add mouseover catching
+var svg = d3.select("#graph-container");
+var margin = {top: 20, right: 20, bottom: 30, left: 50}
+var width = +svg.attr("width") - margin.left - margin.right;
+var height = +svg.attr("height") - margin.top - margin.bottom;
+
+// read in the ticker-level interaction data (pairwise correlation)
+d3.dsv(',', 'data/ticker_corr3.csv', function(d) {
+      return {
+          source: d.source,
+          target: d.target,
+          correlation: Math.round(+d.Correlation * 100)/100,
+          value: isNaN(d.norm_corr) ? 0 : +d.norm_corr,
+        }     
+}).then(function(data) {
+
+    var links = data;
+
+    // read in the node data
+    d3.dsv(',', 'data/ticker_nodes3.csv', function(d) {
+      return {
+          name: d.name,
+          Correlation: +d.Correlation,
+        }
+}).then(function(data2) {
+
+var nodes = data2;
+var origNodes = structuredClone(data2);
+var graphData = {nodes:nodes, links:links};
+
+// function to scale the nodes to the absolute value of the correlatin
+var nodeScale = d3.scaleLinear(d3.extent(graphData.links, d => Math.abs(d.correlation)), [8, 75])
+
+// Define a drag behavior
+var drag = d3
+    .drag()
+    .on("start", dragStart)
+    .on("drag", dragged)
+    .on("end", dragEnded);
+
+  // Add an event listener to the range slider
+  const rangeSlider = document.getElementById("corrRange");
+  const corrMinimumDisplay = document.getElementById("corrMinValue");
+
+  rangeSlider.addEventListener("input", function() {
+    const corrMinValue = +this.value; // Convert the value to a number
+    corrMinimumDisplay.textContent = corrMinValue;
+  }
+);
+
+// Create a tooltip
+var Tooltip = d3.select("g")
+                .append("div")
+                .style("opacity", 0)
+                .attr("class", "tooltip")
+                .style("background-color", "white")
+                .style("boarder", "solid")
+                .style("boarder-width", "2px")
+                .style("boarder-radius", "5px")
+                .style("padding", "5px");
+
+var textsAndNodes = svg
+    .selectAll("g")
+    .data(graphData.nodes)
+    .enter()
+    .append("g")
+    .call(drag)
+    .on("click", clicked)
+    .on("mouseover", mouseover)
+    .on("mouseout", mouseleave);
+
+// specify the circle SVGs as node class
+// style based on correlation value
+var circles = textsAndNodes
+    .append("circle")
+    .attr("class", "node")
+    .attr("r", function(d){
+        return nodeScale(Math.abs(d.Correlation));
+    })
+    // set fill depending on correlation value
+    .attr("fill", function(d){
+        return d.Correlation < 0 ?  "grey" : "#0C5E98";}
+    );
+
+// render issue was due to setting strength on forceCenter too high
+var simulation = d3
+        .forceSimulation(graphData.nodes)
+        .force("charge", d3.forceManyBody().strength(4))
+        .force("center", d3.forceCenter(width/2, height/2).strength(1)) 
+        .force("collide",
+            d3.forceCollide(function(d){
+                return nodeScale(Math.abs(d.Correlation));
+            })
+            .strength(0.8))
+        .on("tick", ticked);
+
+
+// specify texts
+var texts = textsAndNodes.append("text")
+                         .attr("class", "text")
+                         .text(function(d){return d.name;})
+
+// Define slider
+var slider = document.getElementById('corrRange');
+
+// Function to update the slider position
+function updateSliderPosition(value) {
+    console.log("slider:", slider, "value:", slider.value)
+    slider.value = value;
+}
+
+// Add event listener to the slider
+slider.addEventListener('input', function() {
+    var correlationThreshold = +this.value; // Convert slider value to a number
+    updateVisualization(correlationThreshold);
+    updateSliderPosition(+this.value);
+});
+
+// Add event listener to the slider
+document.getElementById('corrRange').addEventListener('input', function() {
+    var correlationThreshold = +this.value; // Convert slider value to a number
+    updateVisualization(correlationThreshold);
+});
+
+// see if drag fxs can be moved into functions.js
+function dragStart(event, d) {
+    {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+      }
+  };
+
+
+  function dragEnded(event, d, simulation) {
+    // if node has been dragged, activate pin response
+    if (event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+
+    // if d is selected, change color. 
+    if (d.fixed == true) {
+        d3.select(this)
+        .select("circle")
+        .style("fill", "#D72862")
+    }
+};
+
+function ticked() {
+    textsAndNodes.attr("transform", function(d){
+        return "translate(" + d.x + ", " + d.y + ")";
+    });
+};
+
+function clicked(event, d) {
+
+        // get the selected circle
+        var circle = d3.select(this).select("circle");
+        var text = d3.select(this).select("text")
+        
+        // collect selected nodes
+        var selectedNode = d3.selectAll("circle.selectedNode");
+        var selectedText = d3.selectAll("text.selectedText");
+
+        // convert the currently selected node to selectedNode class
+        circle.attr("class", "selectedNode");
+        text.attr("class", "selectedText");
+
+        // Node initially selected
+        if (circle.size() === 1 && selectedNode.size() === 0){
+            updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nodeScale, simulation)
+        };
+
+        // if there is already one selected node
+        if (selectedNode.size() === 1) {
+
+            // convert the previously selected node back to normal
+            selectedNode.attr("class", "node");
+            selectedText.attr("class", "text")
+            };
+
+        // check if any nodes remain selected
+        var selectedNodeEndState = d3.selectAll("circle.selectedNode")
+
+       // Node selection transferred
+       if (circle.size() === 1 && selectedNode.size() === 1 && selectedNodeEndState.size() === 1){
+            updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nodeScale, simulation)
+        };
+
+        // if no nodes remain selected... perform action!
+        if (selectedNodeEndState.size() === 0){
+            resetNodeCorrelations(graphData, origNodes, d, circles, nodeScale, simulation)    
+        };
+        
+};
+
+// Close data function and catch error if it exists
+}).catch(function(error) {
+        console.log(error);
+});
+
+}).catch(function(error) {
+            console.error("Error loading file 2:", error);
+        });
+
+</script>
+</div>
