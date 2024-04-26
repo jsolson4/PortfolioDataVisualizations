@@ -162,3 +162,13 @@ function updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nodeScale,
     // restart simulation to apply changes (update node radii sizes)
     restartSimulation(simulation);
 };
+
+
+function dragged(event, d) {
+  d.fx = event.x;
+  d.fy = event.y;
+};
+
+
+
+
