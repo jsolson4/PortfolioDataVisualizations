@@ -53,8 +53,6 @@ function restartSimulation(simulation){
 
 // create function to convert nodes to their original values on 'unclick'
 function resetNodeCorrelations(graphData, origNodes, d, circles, nodeScale, simulation){
-    console.log("### RUN resetNodeCorrelation ###")
-
     // for each circle svg...
     circles.each(function(d) {
         
