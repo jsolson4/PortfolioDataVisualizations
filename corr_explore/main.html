@@ -10,15 +10,14 @@
 <!-- // Tutorial Link: https://www.youtube.com/watch?v=y2-sgZh49dQ -->
 
 <!-- Set title (correct placement?)-->
-<title>Corr Explore</title>
+<title>Correlation Explorer</title>
 
 <!-- Create left hand column-->
 <!-- Left Quarter Column -->
 <div class="left-column">
     <div class="left-column-content">
         <!-- Content for the left column goes here -->
-        <h2>Corr Explore</h2>
-        <p><i>This is an exciting new way to visualize portfolio correlation.</i></p>
+        <h2>Correlation Explorer</h2>
     
         <div class="slidecontainer">
             <input type="range" min="0" max="1" value="0.0" 
@@ -27,24 +26,6 @@
         <!-- Display the selected value -->
         <p>Min. Correlation: <span id="corrMinValue">0.0</span></p>    
     </div>
-<script>
-    
-//   // Add an event listener to the range slider
-//   const rangeSlider = document.getElementById("corrRange");
-//   const corrMinimumDisplay = document.getElementById("corrMinValue");
-
-//     // Function to update node visibility based on the slider value
-//     function updateNodeVisibility(corrMinvalue) {
-//     graphData.nodes.attr("display", d => (d.Correlation >= corrMinvalue) ? "block" : "none");
-//   }
-
-//   rangeSlider.addEventListener("input", function() {
-//     const corrMinValue = +this.value; // Convert the value to a number
-//     corrMinimumDisplay.textContent = corrMinValue;
-//     updateNodeVisibility(corrMinValue);
-//   }
-// );
-</script>
 
 <script>var slider = document.getElementById("corrRange");</script>
       </div>
@@ -53,24 +34,28 @@
 <!-- Create a div where the graph will take place -->
 <div class="right-column">
 
+<!-- Title and Average Correlation -->
+<h2 id="my-heading" style="text-align: center;">Original heading text</h2>
+
 <!-- <svg id = "graph-container" width="800" height = "800"></svg> -->
 <svg id = "graph-container" width="1100" height = "800"></svg>
 <div class="tooltip" id="tooltip"></div>
 
 <script>
+
+// Default heading variable for the page
+var myHeading = document.querySelector('#my-heading');
+var defaultHeading = "Average Pairwise Correlations"
+myHeading.innerHTML = defaultHeading
+
 // select the svg container; add mouseover catching
 var svg = d3.select("#graph-container");
 var margin = {top: 20, right: 20, bottom: 30, left: 50}
-//console.log("svg width:", +svg.attr("width"), "height:", +svg.attr("height"), svg)
 var width = +svg.attr("width") - margin.left - margin.right;
 var height = +svg.attr("height") - margin.top - margin.bottom;
 
-// Colors Reference
-// #327FB9 #012348 #003466 #262626 #6B6F72 #0C5E98 #D9D9D9 #F3F2F2
-
 // read in the ticker-level interaction data (pairwise correlation)
 d3.dsv(',', 'data/ticker_corr3.csv', function(d) {
-    //console.log(d.source, d.target, d.Correlation, d.norm_corr)
       return {
           source: d.source,
           target: d.target,
@@ -83,7 +68,6 @@ d3.dsv(',', 'data/ticker_corr3.csv', function(d) {
 
     // read in the node data
     d3.dsv(',', 'data/ticker_nodes3.csv', function(d) {
-    //console.log(d.name, d.Correlation)
       return {
           name: d.name,
           Correlation: +d.Correlation,
@@ -92,34 +76,12 @@ d3.dsv(',', 'data/ticker_corr3.csv', function(d) {
 
 var nodes = data2;
 var origNodes = structuredClone(data2);
-// CORRELATION  SHOULD BE SIZE BY THE ABSOLUTE VALUE
-// THEN NEGATIVELY CORRELATED SECURITIES TO BE DIFFERENT COLOR
-
-// filter nodes based on slider
-// var nodes = nodes.filter(function(node) {
-//     console.log("inside filter:", node.Correlation <= slider.value)
-//     return node.Correlation <= slider.value;
-// });
-
 var graphData = {nodes:nodes, links:links};
 
-
-console.log("origNodes:", origNodes)
-// Notes
-// fix drag functionality
-// add/test charge strength where nodes are specifically attracted to one another... may have to be invisible links?
-console.log("width:", width/2, "height:", height/2)
-
 // function to scale the nodes to the absolute value of the correlatin
-//var nodeScale = d3.scaleLinear(d3.extent(graphData.nodes, d => Math.abs(d.Correlation)), [10, 50])
 var nodeScale = d3.scaleLinear(d3.extent(graphData.links, d => Math.abs(d.correlation)), [8, 75])
 
-
-// Define a drag behavior using D3's drag function, which enables drag interactions on SVG elements.
-// This drag behavior listens for three types of events: "start", "drag", and "end".
-// When a drag interaction starts, the dragStart function is called.
-// During the drag interaction, the dragged function is called to handle updates to the dragged element's position.
-// When the drag interaction ends, the dragEnded function is called to perform any necessary cleanup or finalization.
+// Define a drag behavior
 var drag = d3
     .drag()
     .on("start", dragStart)
@@ -130,20 +92,14 @@ var drag = d3
   const rangeSlider = document.getElementById("corrRange");
   const corrMinimumDisplay = document.getElementById("corrMinValue");
 
-//     // Function to update node visibility based on the slider value
-//     function updateNodeVisibility(corrMinvalue) {
-//     graphData.nodes.attr("display", d => (d.Correlation >= corrMinvalue) ? "block" : "none");
-//   }
-
   rangeSlider.addEventListener("input", function() {
     const corrMinValue = +this.value; // Convert the value to a number
     corrMinimumDisplay.textContent = corrMinValue;
-    //updateNodeVisibility(corrMinValue);
   }
 );
 
 // Create a tooltip
-var Tooltip = d3.select("g")//.select("#graph-container")
+var Tooltip = d3.select("g")
                 .append("div")
                 .style("opacity", 0)
                 .attr("class", "tooltip")
@@ -153,22 +109,14 @@ var Tooltip = d3.select("g")//.select("#graph-container")
                 .style("boarder-radius", "5px")
                 .style("padding", "5px");
 
-
-// mouseleave was defined as a var... now a function
-
 var textsAndNodes = svg
     .selectAll("g")
     .data(graphData.nodes)
     .enter()
     .append("g")
-    // .filter(function(d){ 
-    //     console.log(d, d.Correlation, +corrMinimumDisplay.textContent)
-    //     return d.Correlation >= +corrMinimumDisplay.textContent})
     .call(drag)
     .on("click", clicked)
-    //.on("click", updateCenter)
     .on("mouseover", mouseover)
-    //.on("mousemove", mousemove)
     .on("mouseout", mouseleave);
 
 // specify the circle SVGs as node class
@@ -183,38 +131,24 @@ var circles = textsAndNodes
     .attr("fill", function(d){
         return d.Correlation < 0 ?  "grey" : "#0C5E98";}
     );
-    //.attr("stroke", "black")
 
 // render issue was due to setting strength on forceCenter too high
 var simulation = d3
         .forceSimulation(graphData.nodes)
-        .force("charge", d3.forceManyBody().strength(4))//5
-        .force("center", d3.forceCenter(width/2, height/2).strength(1))//1 
-        .force("collide", //d3.forceCollide().radius(d => d.radius)
+        .force("charge", d3.forceManyBody().strength(4))
+        .force("center", d3.forceCenter(width/2, height/2).strength(1)) 
+        .force("collide",
             d3.forceCollide(function(d){
-                return nodeScale(Math.abs(d.Correlation)); //d.Correlation
+                return nodeScale(Math.abs(d.Correlation));
             })
-            .strength(0.8))//0.7
+            .strength(0.8))
         .on("tick", ticked);
-
-
-// Sort of got this node update working.
-// need to figure out what the node value of the selected node should be
-// also need to update everything else in the file (hover correlation, collide force, etc.)...
-// need to create a 'deselect' function
 
 
 // specify texts
 var texts = textsAndNodes.append("text")
                          .attr("class", "text")
                          .text(function(d){return d.name;})
-
-function ticked() {
-    //translate(x,y)
-    textsAndNodes.attr("transform", function(d){
-        return "translate(" + d.x + ", " + d.y + ")";
-    });
-};
 
 // Define slider
 var slider = document.getElementById('corrRange');
@@ -238,20 +172,17 @@ document.getElementById('corrRange').addEventListener('input', function() {
     updateVisualization(correlationThreshold);
 });
 
+// see if drag fxs can be moved into functions.js
 function dragStart(event, d) {
-      {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
-        d.fx = d.x;
-        d.fy = d.y;
-        }
-    };
+    {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+      }
+  };
 
-function dragged(event, d) {
-    d.fx = event.x;
-    d.fy = event.y;
-};
 
-function dragEnded(event, d) {
+  function dragEnded(event, d, simulation) {
     // if node has been dragged, activate pin response
     if (event.active) simulation.alphaTarget(0);
     d.fx = null;
@@ -265,36 +196,32 @@ function dragEnded(event, d) {
     }
 };
 
-
-// NOTES ON CLICKED LOGIC
-// currently node values are updated every time a node is clicked
-// we have two cases for updates:
-// 1) a node is highlighted: run 
+function ticked() {
+    textsAndNodes.attr("transform", function(d){
+        return "translate(" + d.x + ", " + d.y + ")";
+    });
+};
 
 function clicked(event, d) {
 
         // get the selected circle
         var circle = d3.select(this).select("circle");
-        console.log("clicked d:", d, "event:", event)
-        //updateCenter(d)
-        
         var text = d3.select(this).select("text")
         
         // collect selected nodes
         var selectedNode = d3.selectAll("circle.selectedNode");
         var selectedText = d3.selectAll("text.selectedText");
 
-        console.log("selected node size", selectedNode.size(), "circle size", circle.size(), "circle:", circle, selectedNode)
-
         // convert the currently selected node to selectedNode class
         circle.attr("class", "selectedNode");
         text.attr("class", "selectedText");
 
+        // Change the heading based on the selected security
+        myHeading.innerHTML = "Correlation to " + d.name
+
         // Node initially selected
         if (circle.size() === 1 && selectedNode.size() === 0){
-            console.log("INITIAL NODE SELECTION")
             updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nodeScale, simulation)
-            //resetNodeCorrelations(nodes);
         };
 
         // if there is already one selected node
@@ -303,9 +230,6 @@ function clicked(event, d) {
             // convert the previously selected node back to normal
             selectedNode.attr("class", "node");
             selectedText.attr("class", "text")
-            
-            // WHEN A NODE IS TRANSITIONED...
-            // It needs to revert to it's normal size in origNodes
             };
 
         // check if any nodes remain selected
@@ -313,132 +237,16 @@ function clicked(event, d) {
 
        // Node selection transferred
        if (circle.size() === 1 && selectedNode.size() === 1 && selectedNodeEndState.size() === 1){
-            console.log("NODE SELECTION TRANSFER")
             updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nodeScale, simulation)
-            //resetNodeCorrelations(nodes);
         };
 
         // if no nodes remain selected... perform action!
         if (selectedNodeEndState.size() === 0){
-            console.log("NODE HAs BEEN UNSELECTED")
-            resetNodeCorrelations(graphData, origNodes, d, circles, nodeScale, simulation)
-            
+            myHeading.innerHTML = defaultHeading
+            resetNodeCorrelations(graphData, origNodes, d, circles, nodeScale, simulation, myHeading, defaultHeading)    
         };
         
-
-
 };
-
-
-
-// --------------------------------------------------------------------------
-
-// Call the function to update node radii initially
-//updateNodeRadii();
-
-//     .on("click", function(event, d) {
-//     updateNodeSizes(d);
-//     });
-
-// // Define a function to update node positions based on selected node
-// function updateNodeSizes(selectedNode) {
-//     const selectedLinks = links.filter(link => link.source === selectedNode.name || link.target === selectedNode.name);
-//     circles.each(function(d) {
-        
-//         console.log("d:", d)
-
-//         if (d.name !== selectedNode.name) {
-//             const relatedLinks = selectedLinks.filter(link => link.source === d.id || link.target === d.id);
-//             const correlationValue = relatedLinks.length > 0 ? relatedLinks[0].correlation : 0;
-            
-//             // create temp node scale
-
-//             // Update node position based on correlation value
-//             d3.select(this)
-//                 .attr("r", function(d){
-//                     return nodeScale(Math.abs(d.correlation));
-//                     });
-//         }
-//     });
-// }
-
-
-// update correlation function
-// function updateCorrelation(event, d){
-//     console.log("event:", event, "d:", d)
-//     // array.forEach(element => {   
-//     // });
-
-// }
-
-// Define a function to update the visualization based on correlation threshold
-// function updateVisualization(correlationThreshold) {
-//     // Filter nodes based on the correlation threshold
-//     nodes = nodes.filter(function(node) {
-//         console.log('update vis fx:', node.Correlation, "corr threshold:", correlationThreshold, "logic:", node.Correlation < correlationThreshold)
-//         return node.Correlation < correlationThreshold;
-//     });
-
-    // Update your visualization to display only the filtered nodes
-    // Your visualization update code goes here
-    // For example, you might update the node positions or remove nodes from the visualization
-//}
-
-// --------------------------------------------------------------------------
-
-
-// function clicked(event, d, limit = 1) {
-//         var circle = d3.select(this).select("circle");
-        
-//         // check if the node is selected
-//         var isSelected = circle.attr("class") === "selectedNode"
-        
-//         // collect selected nodes
-//         const selectedNodes = d3.selectAll("circle.selectedNode");
-        
-//         // make sure the number of selected nodes is less than the limit
-//         const underNodeClassCapacity = selectedNodes.size() < limit;
-
-//         // Toggle node color //
-        
-//         // If not selected and under capacity limit, turn it on
-//         if (underNodeClassCapacity) {
-//             circle.attr("class", "selectedNode");
-//             //selectedNodes.attr("class", "node");
-//         }
-
-//         // if node is selected and clicked again, turn it off
-//         else if (isSelected) {
-//             circle.attr("class", "node");
-//         };
-// };
-
-
-// function clicked(event, d, limit = 1) {
-//         var circle = d3.select(this).select("circle");
-        
-//         // check if the node is selected
-//         var isSelected = circle.attr("class") === "selectedNode"
-        
-//         // collect selected nodes
-//         const selectedNodes = d3.selectAll("circle.selectedNode");
-        
-//         // make sure the number of selected nodes is less than the limit
-//         const underNodeClassCapacity = selectedNodes.size() < limit;
-
-//         // Toggle node color //
-        
-//         // If not selected and under capacity limit, turn it on
-//         if (underNodeClassCapacity) {
-//             circle.attr("class", "selectedNode");
-//             //selectedNodes.attr("class", "node");
-//         }
-
-//         // if node is selected and clicked again, turn it off
-//         else if (isSelected) {
-//             circle.attr("class", "node");
-//         };
-// };
 
 // Close data function and catch error if it exists
 }).catch(function(error) {

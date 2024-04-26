@@ -6,7 +6,6 @@ function dragStart(event, d) {
       }
   };
 
-
 function dragged(event, d) {
   d.fx = event.x;
   d.fy = event.y;
