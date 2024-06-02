@@ -21,7 +21,7 @@
 
 .text {
     fill: black;
-    stroke:2px;
+    stroke:2.5px;
     font-size: 12px;
     font-family: "Arial Bold", "Helvetica Bold", sans-serif;
     pointer-events: none;
