@@ -5,6 +5,8 @@ import './ticker_styles.css';
 import * as fx from './functions';
 import * as ui from './user_interactions';
 
+console.log("test")
+
 const CorrelationExplorer = () => {
   const [correlation, setCorrelation] = useState(0.0);
 
@@ -17,16 +19,15 @@ const CorrelationExplorer = () => {
     const defaultHeading = "Average Pairwise Correlations";
     myHeading.text(defaultHeading);
 
-    d3.dsv(',', './ticker_corr3.csv').then(data => {
-      console.log("data:", data)
+    d3.dsv(',', '/data/ticker_corr3.csv').then(data => {
       const links = data.map(d => ({
         source: d.source,
         target: d.target,
         correlation: Math.round(+d.Correlation * 100) / 100,
         value: isNaN(d.norm_corr) ? 0 : +d.norm_corr,
       }));
-      
-      d3.dsv(',', './data/ticker_nodes3.csv').then(data2 => {
+
+      d3.dsv(',', '/data/ticker_nodes3.csv').then(data2 => {
         const nodes = data2.map(d => ({
           name: d.name,
           Correlation: +d.Correlation,
