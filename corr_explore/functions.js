@@ -1,6 +1,4 @@
 
-
-
 // Three function that change the tooltip when user hover / move / leave a cell
 
 // define what happens on mouse over event
@@ -10,7 +8,7 @@ function mouseover(event, d) {
 
     d3.select("#tooltip")
         .style("opacity", 1)
-        .html(`Node:${d.name}<br>Correlation: ${d.Correlation}`)
+        .html(`Security:${d.name}<br>Correlation: ${d.Correlation}`)
         .style("left", (xy[0]) + "px")
         .style("top", (xy[1]-50) + "px");
 };
@@ -79,7 +77,7 @@ function updateCircles(radius, correlation){
     d3.select(this)
     .attr("r", radius)
     .attr("fill", function(d){
-        return correlation < 0 ? "grey":"#0C5E98";
+        return correlation < 0 ? "#D9D9D9":"#0C5E98";
     });
 };
 
@@ -168,5 +166,7 @@ function dragged(event, d) {
 };
 
 
+function getAverageCorrelation(nodes){
 
+};
 
