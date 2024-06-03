@@ -1,0 +1,102 @@
+/* Colors Reference: #327FB9 #012348 #003466 #262626 #6B6F72 #0C5E98 #D9D9D9 #F3F2F2 */
+
+.node{
+    stroke-width:1.5px;
+    stroke:black;
+}
+
+.selectedNode {
+ stroke:white;
+ stroke-width:2.5px;
+}
+
+.selectedText {
+    fill: white;
+    stroke:2px;
+    font-size: 16px;
+    font-family: Arial, Helvetica, sans-serif, bold;
+    pointer-events: none;
+    text-anchor: middle;
+  }
+
+.text {
+    fill: black;
+    stroke:2.5px;
+    font-size: 12px;
+    font-family: "Arial Bold", "Helvetica Bold", sans-serif;
+    pointer-events: none;
+    text-anchor: middle;
+  }
+
+/* Define styles for the left column */
+.left-column {
+    width: 20%; /* Set the width to occupy 25% of the page */
+    height: 100vh; /* Make the column full height of the viewport */
+    position: fixed; /* Fix the position of the column */
+    top: 0; /* Align to the top of the viewport */
+    left: 0; /* Align to the left of the viewport */
+    background-color:#0C5E98;
+    display: inline-block;
+}
+
+.left-column-content {
+    margin-left:20
+}
+
+.right-column {
+    width: 80%; /* Set the width to occupy 25% of the page */
+    height: 100vh; /* Make the column full height of the viewport */
+    /*background-color: #EBEBEB; /* Set background color */
+    position: fixed; /* Fix the position of the column */
+    top: 0; /* Align to the top of the viewport */
+    left: 20%; /* Align to the left of the viewport */
+    background-color: #6B6F72 ;
+    display: inline-block; /*Allows for separation of divs*/
+    border:1px solid black;
+    
+
+}
+
+
+.tooltip {
+    position: absolute;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black background */
+    color: #fff; /* White text */
+    border: none; /* Remove border */
+    padding: 10px; /* More padding */
+    border-radius: 5px; /* Rounded corners */
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+    transform: translateY(-10px); /* Slightly move tooltip up */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+    z-index: 1000; /* Ensure the tooltip is above other elements */
+}
+
+.tooltip.visible {
+    opacity: 1;
+    transform: translateY(0); /* Move tooltip into position */
+}
+
+
+/*
+.tooltip {
+    position: absolute;
+    font-family: Arial;
+    font-size: 9px;
+    background-color: white;
+    border: 2px solid black;
+    padding: 5px;
+    border-radius: 5px;
+    pointer-events: none;
+    opacity: 0;
+}
+*/
+
+/* Additional styling for content within the left column */
+/* .left-column-content {
+    padding: 20px; /* Add some padding for content */
+/*}
+ */

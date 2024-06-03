@@ -1,34 +1,66 @@
 
+
+import * as d3 from 'd3';
+import './ticker_styles.css';
+
 // Three function that change the tooltip when user hover / move / leave a cell
 
 // define what happens on mouse over event
-function mouseover(event, d) {
-    // get pointer position
-    const xy = d3.pointer(event, svg.node())
+// Mouseover event
+export function mouseover(event, d) {
+    console.log("mouseover");
 
+    // Get pointer position relative to the document
+    //const [mouseX, mouseY] = d3.pointer(event);
+    console.log(d.name, d.Correlation);
+
+    // Select and style the tooltip
     d3.select("#tooltip")
-        .style("opacity", 1)
-        .html(`Security:${d.name}<br>Correlation: ${d.Correlation}`)
-        .style("left", (xy[0]) + "px")
-        .style("top", (xy[1]-50) + "px");
-};
+        .html(`Security: ${d.name}<br>Correlation: ${d.Correlation}`)
+        .style("left", `${d.x}px`) // Offset the tooltip slightly to the right of the cursor
+        .style("top", `${d.y + 10}px`) // Offset the tooltip slightly below the cursor
+        .classed("visible", true); // Add the visible class to show the tooltip
+}
+
+// export function mouseover(event, d) {
+//     console.log("mouseover", event.currentTarget)
+//     console.log(event)
+//     console.log("d:", d)
+//     // Get pointer position
+//     //const xy = d3.pointer(event, svg.node());
+//     const xy = d3.pointer(event, event.currentTarget);
+//     console.log(d.name, d.Correlation)
+//     d3.select("#tooltip")
+//         .style("opacity", 1)
+//         .html(`Security:${d.name}<br>Correlation: ${d.Correlation}`)
+//         .style("left", (d.x) + "px")
+//         .style("top", (d.y) + "px");
+    
+// };
 
 // define what happens when the mouse leaves the svg
-function mouseleave(event, d) {
+// export function mouseleave(event, d) {
+//     console.log("mouse leave")
+//     d3.select("#tooltip")
+//         .style("opacity", 0)
+//   };
+
+// Mouseleave event
+export function mouseleave(event, d) {
     d3.select("#tooltip")
-        .style("opacity", 0)
-  };
+        .classed("visible", false); // Remove the visible class to hide the tooltip
+}
 
 
 // function to calculate the node radius
-function calcRadius(nodeScale, correlation){
+export function calcRadius(nodeScale, correlation){
     const radius = nodeScale(Math.abs(correlation))
     return radius
 };
 
 
 // Function to update forceCollide after node radius change
-function updateForceCollide(simulation, d, nodeScale) {
+export function updateForceCollide(simulation, d, nodeScale) {
     // Update the radius accessor function of forceCollide
     // simulation.force("collide", d3.forceCollide(function(d){
     //             return radius; //d.Correlation
@@ -44,17 +76,18 @@ function updateForceCollide(simulation, d, nodeScale) {
 };
 
 // update simulation
-function restartSimulation(simulation){
+export function restartSimulation(simulation){
     simulation.alpha(1).restart();
 }
 
 
 // create function to convert nodes to their original values on 'unclick'
-function resetNodeCorrelations(graphData, origNodes, d, circles, nodeScale, simulation){
+export function resetNodeCorrelations(graphData, origNodes, d, circles, nodeScale, simulation){
     // for each circle svg...
     circles.each(function(d) {
         
-        const newCorr = origNodes.filter(node => node.name == d.name)[0].Correlation
+        // converted to === from ==
+        const newCorr = origNodes.filter(node => node.name === d.name)[0].Correlation
 
         // adjust correlation in graphData.nodes
         graphData.nodes.filter(node => node.name === d.name)[0].Correlation = newCorr
@@ -71,7 +104,7 @@ function resetNodeCorrelations(graphData, origNodes, d, circles, nodeScale, simu
 
 
 // repeatable fx to update correlation
-function updateCircles(radius, correlation){
+export function updateCircles(radius, correlation){
 
     // update circle size & fill color
     d3.select(this)
@@ -82,13 +115,13 @@ function updateCircles(radius, correlation){
 };
 
 // function to update the simulation value
-function updateSimulation(){
+export function updateSimulation(){
  // todo
 };
 
 
 // function update node corr
-function updateNodeCorr(nodes, nodeName, newCorr){
+export function updateNodeCorr(nodes, nodeName, newCorr){
     nodes.filter(node => node.name === nodeName)
          .forEach(node => {
             node.Correlation = newCorr;
@@ -100,9 +133,10 @@ function updateNodeCorr(nodes, nodeName, newCorr){
 // updateNodeRadiusToLinkCorr
 //
 // Define a function to update node radii based on link correlation
-function updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nodeScale, simulation) { // updateNodeRadii
+export function updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nodeScale, simulation) { // updateNodeRadii
 
     // get all relevant links
+    console.log("graphData:", graphData)
     const relevantLinks = graphData.links.filter(link => link.source === d.name)
 
     // extract corrrelation values into an array
@@ -160,13 +194,10 @@ function updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nodeScale,
 };
 
 
-function dragged(event, d) {
+export function dragged(event, d) {
   d.fx = event.x;
   d.fy = event.y;
 };
 
 
-function getAverageCorrelation(nodes){
-
-};
 

@@ -1,76 +1,84 @@
 /* Colors Reference: #327FB9 #012348 #003466 #262626 #6B6F72 #0C5E98 #D9D9D9 #F3F2F2 */
 
-.node{
-    stroke-width:1.5px;
-    stroke:black;
+/* Node styles */
+.node {
+    stroke-width: 1.5px;
+    stroke: #262626; /* Dark gray stroke */
+    fill: #327FB9; /* Blue fill color */
 }
 
 .selectedNode {
- stroke:white;
- stroke-width:2.5px;
+    stroke: white; /* Dark gray stroke */
+    stroke-width: 2.5px;
+    fill: #0C5E98; /* Dark blue fill color for selected nodes */
 }
 
+/* Text styles */
 .selectedText {
     fill: white;
-    stroke:2px;
     font-size: 16px;
-    font-family: Arial, Helvetica, sans-serif, bold;
+    font-family: Arial, Helvetica, sans-serif;
     pointer-events: none;
     text-anchor: middle;
-  }
+}
 
 .text {
-    fill: black;
-    stroke:2px;
+    fill: #262626; /* Dark gray text color */
     font-size: 12px;
-    font-family: "Arial Bold", "Helvetica Bold", sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     pointer-events: none;
     text-anchor: middle;
-  }
+}
 
-/* Define styles for the left column */
+/* Left column styles */
 .left-column {
-    width: 20%; /* Set the width to occupy 25% of the page */
+    width: 20%; /* Set the width to occupy 20% of the page */
     height: 100vh; /* Make the column full height of the viewport */
     position: fixed; /* Fix the position of the column */
     top: 0; /* Align to the top of the viewport */
     left: 0; /* Align to the left of the viewport */
-    background-color:#0C5E98;
-    display: inline-block;
+    background-color: #003466; /* Dark blue background color */
+    display: flex; /* Use flexbox for layout */
+    flex-direction: column; /* Arrange items vertically */
+    justify-content: flex-start; /* Align items at the start of the column */
+    align-items: center; /* Center items horizontally */
+    padding: 20px; /* Add padding for content */
 }
 
-.left-column-content {
-    margin-left:20
-}
-
+/* Right column styles */
 .right-column {
-    width: 80%; /* Set the width to occupy 25% of the page */
+    width: 80%; /* Set the width to occupy 80% of the page */
     height: 100vh; /* Make the column full height of the viewport */
-    /*background-color: #EBEBEB; /* Set background color */
     position: fixed; /* Fix the position of the column */
     top: 0; /* Align to the top of the viewport */
     left: 20%; /* Align to the left of the viewport */
-    background-color: #6B6F72 ;
-    display: inline-block; /*Allows for separation of divs*/
-    border:1px solid black;
-    
-
+    background-color: #F3F2F2; /* Light gray background color */
+    display: flex; /* Use flexbox for layout */
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
+    padding: 20px; /* Add padding for content */
 }
 
+/* Tooltip styles */
 .tooltip {
     position: absolute;
-    font-family: Arial;
-    font-size: 9px;
-    background-color: white;
-    border: 1px solid #003466;
-    padding: 5px;
-    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    background-color: #262626; /* Dark gray background color */
+    color: #fff; /* White text color */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px; /* Add padding */
     pointer-events: none;
     opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    z-index: 999; /* Ensure tooltip is above other elements */
+}
+
+.tooltip.visible {
+    opacity: 1;
 }
 
 /* Additional styling for content within the left column */
-/* .left-column-content {
-    padding: 20px; /* Add some padding for content */
-/*}
- */
+.left-column-content {
+    margin-top: 20px; /* Add margin at the top */
+}

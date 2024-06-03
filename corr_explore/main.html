@@ -129,7 +129,7 @@ var circles = textsAndNodes
     })
     // set fill depending on correlation value
     .attr("fill", function(d){
-        return d.Correlation < 0 ?  "grey" : "#0C5E98";}
+        return d.Correlation < 0 ?  "#A9A9A9" : "#0C5E98";}
     );
 
 // render issue was due to setting strength on forceCenter too high
@@ -217,7 +217,7 @@ function clicked(event, d) {
         text.attr("class", "selectedText");
 
         // Change the heading based on the selected security
-        myHeading.innerHTML = "Correlation to " + d.name
+        myHeading.innerHTML = "Correlations to " + d.name
 
         // Node initially selected
         if (circle.size() === 1 && selectedNode.size() === 0){
