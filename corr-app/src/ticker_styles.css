@@ -57,17 +57,43 @@
 
 }
 
+
+.tooltip {
+    position: absolute;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black background */
+    color: #fff; /* White text */
+    border: none; /* Remove border */
+    padding: 10px; /* More padding */
+    border-radius: 5px; /* Rounded corners */
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+    transform: translateY(-10px); /* Slightly move tooltip up */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+    z-index: 1000; /* Ensure the tooltip is above other elements */
+}
+
+.tooltip.visible {
+    opacity: 1;
+    transform: translateY(0); /* Move tooltip into position */
+}
+
+
+/*
 .tooltip {
     position: absolute;
     font-family: Arial;
     font-size: 9px;
     background-color: white;
-    border: 1px solid #003466;
+    border: 2px solid black;
     padding: 5px;
     border-radius: 5px;
     pointer-events: none;
     opacity: 0;
 }
+*/
 
 /* Additional styling for content within the left column */
 /* .left-column-content {
