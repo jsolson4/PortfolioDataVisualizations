@@ -5,6 +5,7 @@ import './ticker_styles.css';
 import * as fx from './functions';
 import * as ui from './user_interactions';
 
+
 console.log("test")
 
 const CorrelationExplorer = () => {
@@ -32,9 +33,12 @@ const CorrelationExplorer = () => {
           name: d.name,
           Correlation: +d.Correlation,
         }));
-        const origNodes = structuredClone(nodes);
-        const graphData = { nodes, links };
-        const nodeScale = d3.scaleLinear()
+        var origNodes = structuredClone(nodes);
+        var graphData = { nodes:nodes, links:links };
+
+        console.log("graph data:", graphData)
+        console.log("graph data links:", graphData.links)
+        var nodeScale = d3.scaleLinear()
           .domain(d3.extent(graphData.links, d => Math.abs(d.correlation)))
           .range([8, 75]);
 
@@ -47,14 +51,14 @@ const CorrelationExplorer = () => {
           .data(graphData.nodes)
           .enter().append("g")
           .call(drag)
-          .on("click", ui.clicked)
+          .on("click", clicked)
           .on("mouseover", fx.mouseover)
           .on("mouseout", fx.mouseleave);
 
         const circles = textsAndNodes.append("circle")
           .attr("class", "node")
           .attr("r", d => nodeScale(Math.abs(d.Correlation)))
-          .attr("fill", d => d.Correlation < 0 ? "#A9A9A9" : "#0C5E98");
+          .attr("fill", d => d.Correlation < 0 ? "#A9A9A9" : "#327FB9");
 
         textsAndNodes.append("circle")
           .attr("class", "node")
@@ -75,7 +79,7 @@ const CorrelationExplorer = () => {
           textsAndNodes.attr("transform", d => `translate(${d.x}, ${d.y})`);
         }
 
-        function clicked(event, d) {
+        function clicked(d, origNodes, graphData, nodeScale, simulation, myHeading) {
           const circle = d3.select(this).select("circle");
           const text = d3.select(this).select("text");
 
@@ -85,9 +89,10 @@ const CorrelationExplorer = () => {
           circle.attr("class", "selectedNode");
           text.attr("class", "selectedText");
 
-          myHeading.text(`Correlations to ${d.name}`);
+          //myHeading.text(`Correlations to ${d.name}`);
 
           if (circle.size() === 1 && selectedNode.size() === 0) {
+            // circles to textsAndNodes
             fx.updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nodeScale, simulation);
           }
 
@@ -99,11 +104,13 @@ const CorrelationExplorer = () => {
           const selectedNodeEndState = d3.selectAll("circle.selectedNode");
 
           if (circle.size() === 1 && selectedNode.size() === 1 && selectedNodeEndState.size() === 1) {
+            // circles to textAndNodes
             fx.updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nodeScale, simulation);
           }
 
           if (selectedNodeEndState.size() === 0) {
             myHeading.text(defaultHeading);
+            // circles to textAndNodes
             fx.resetNodeCorrelations(graphData, origNodes, d, circles, nodeScale, simulation, myHeading, defaultHeading);
           }
         }
