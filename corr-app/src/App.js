@@ -36,22 +36,34 @@ const CorrelationExplorer = () => {
         var origNodes = structuredClone(nodes);
         var graphData = { nodes:nodes, links:links };
 
-        console.log("graph data:", graphData)
+        console.log("graph data created:", graphData)
         console.log("graph data links:", graphData.links)
         var nodeScale = d3.scaleLinear()
           .domain(d3.extent(graphData.links, d => Math.abs(d.correlation)))
           .range([8, 75]);
 
+        const simulation = d3.forceSimulation(graphData.nodes)
+          .alpha(0.5)
+          .alphaDecay(0.01) // Disable automatic alpha decay
+          .alphaMin(0.1)  
+          .force("charge", d3.forceManyBody().strength(4))
+          .force("center", d3.forceCenter(width / 2, height / 2).strength(1))
+          .force("collide", d3.forceCollide(d => nodeScale(Math.abs(d.Correlation))).strength(0.8))
+          .on("tick", ticked);
+
         const drag = d3.drag()
-          .on("start", ui.dragStart)
+          .on("start", (event, d) => ui.dragStart(event, d, simulation))
           .on("drag", fx.dragged)
           .on("end", ui.dragEnded);
 
         const textsAndNodes = svg.selectAll("g")
           .data(graphData.nodes)
-          .enter().append("g")
-          .call(drag)
-          .on("click", clicked)
+          .enter()
+          .append("g")
+          .call(drag) 
+          .on("click", function(event, d) {
+            clicked.call(this, d, origNodes, graphData, nodeScale, simulation, myHeading);
+          })
           .on("mouseover", fx.mouseover)
           .on("mouseout", fx.mouseleave);
 
@@ -60,16 +72,10 @@ const CorrelationExplorer = () => {
           .attr("r", d => nodeScale(Math.abs(d.Correlation)))
           .attr("fill", d => d.Correlation < 0 ? "#A9A9A9" : "#327FB9");
 
-        textsAndNodes.append("circle")
-          .attr("class", "node")
-          .attr("r", d => nodeScale(Math.abs(d.Correlation)))
-          .attr("fill", d => d.Correlation < 0 ? "#A9A9A9" : "#0C5E98");
-
-        const simulation = d3.forceSimulation(graphData.nodes)
-          .force("charge", d3.forceManyBody().strength(4))
-          .force("center", d3.forceCenter(width / 2, height / 2).strength(1))
-          .force("collide", d3.forceCollide(d => nodeScale(Math.abs(d.Correlation))).strength(0.8))
-          .on("tick", ticked);
+        // textsAndNodes.append("circle")
+        //   .attr("class", "node")
+        //   .attr("r", d => nodeScale(Math.abs(d.Correlation)))
+        //   .attr("fill", d => d.Correlation < 0 ? "#A9A9A9" : "#0C5E98");
 
         textsAndNodes.append("text")
           .attr("class", "text")
@@ -80,6 +86,7 @@ const CorrelationExplorer = () => {
         }
 
         function clicked(d, origNodes, graphData, nodeScale, simulation, myHeading) {
+
           const circle = d3.select(this).select("circle");
           const text = d3.select(this).select("text");
 
@@ -89,9 +96,10 @@ const CorrelationExplorer = () => {
           circle.attr("class", "selectedNode");
           text.attr("class", "selectedText");
 
-          //myHeading.text(`Correlations to ${d.name}`);
-
+          myHeading.text(`Correlations to ${d.name}`);
+          
           if (circle.size() === 1 && selectedNode.size() === 0) {
+            console.log("start resize")
             // circles to textsAndNodes
             fx.updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nodeScale, simulation);
           }
@@ -114,6 +122,16 @@ const CorrelationExplorer = () => {
             fx.resetNodeCorrelations(graphData, origNodes, d, circles, nodeScale, simulation, myHeading, defaultHeading);
           }
         }
+
+      // // Set up interval to log simulation status
+      // const interval = setInterval(() => {
+        
+      //   //console.log("Simulation alpha:", simulation.alpha());
+      //   //console.log("Nodes positions:", graphData.nodes.map(node => ({ x: node.x, y: node.y })));
+      // }, 2000); // 2000 milliseconds = 2 seconds
+
+      // // Clean up interval on component unmount
+      // return () => clearInterval(interval);
 
       }).catch(error => {
         console.error("Error loading file 2:", error);
