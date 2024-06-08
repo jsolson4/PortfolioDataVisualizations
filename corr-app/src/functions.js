@@ -48,7 +48,7 @@ export function mouseover(event, d) {
 // Mouseleave event
 export function mouseleave(event, d) {
     d3.select("#tooltip")
-        .classed("visible", false); // Remove the visible class to hide the tooltip
+      .classed("visible", false); // Remove the visible class to hide the tooltip
 }
 
 
@@ -60,18 +60,26 @@ export function calcRadius(nodeScale, correlation){
 
 
 // Function to update forceCollide after node radius change
-export function updateForceCollide(simulation, d, nodeScale) {
+export function updateForceCollide(simulation, nodeScale) {
     // Update the radius accessor function of forceCollide
     // simulation.force("collide", d3.forceCollide(function(d){
     //             return radius; //d.Correlation
     //         })
     //         .strength(0.8));
 
-   // Update the radius accessor function of forceCollide
-   simulation.force("collide", d3.forceCollide(function(d){
-    return nodeScale(Math.abs(d.Correlation)); //d.Correlation
+   console.log("run update force collide")
+   
+    // Update the radius accessor function of forceCollide
+   simulation.force("collide", 
+                    d3.forceCollide(function(d){
+                        console.log("d:", d)
+                    return nodeScale(Math.abs(d.Correlation))
+                    ; //d.Correlation
     })
     .strength(0.8));
+
+    // add reset alpha
+    simulation.alpha(1).restart();
 
 };
 
@@ -102,7 +110,7 @@ export function resetNodeCorrelations(graphData, origNodes, d, circles, nodeScal
     })
     
     // update simulation to reflect new node sizes
-    updateForceCollide(simulation, d, nodeScale);
+    updateForceCollide(simulation, nodeScale);
 };
 
 
@@ -192,7 +200,7 @@ export function updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nod
         };
 
         // update simulation to reflect new node sizes
-        updateForceCollide(simulation, d, nodeScale);
+        updateForceCollide(simulation, nodeScale);
     });
 
     // restart simulation to apply changes (update node radii sizes)
@@ -200,10 +208,10 @@ export function updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nod
 };
 
 
-export function dragged(event, d) {
-  d.fx = event.x;
-  d.fy = event.y;
-};
+// export function dragged(event, d) {
+//   d.fx = event.x;
+//   d.fy = event.y;
+// };
 
 
 

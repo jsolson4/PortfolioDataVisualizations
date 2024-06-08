@@ -10,19 +10,21 @@ export function dragStart(event, d, simulation) {
   //if (simulation) {
   //simulation.alphaTarget(0.3).restart();
   //}
-  console.log("event active?:", event.active)
+  
   // If the event is not active, fix the node's position
   if (!event.active) {
-    console.log("event is not active")
+    simulation.alphaTarget(0.3).restart();
+    console.log("drag started.", "event active:", event.active)
     d.fx = d.x;
     d.fy = d.y;
   }
 }
 
-export function dragged(event, d) {
-  console.log("dragged")
+export function drag(event, d) {
+  console.log("dragging")
   d.fx = event.x;
   d.fy = event.y;
+  console.log("Dragging. event.active:", event.active);
 };
 
 
@@ -51,24 +53,21 @@ export function dragged(event, d) {
 
 export function dragEnded(event, d, simulation) {
   
-  if (simulation){
-    simulation.alphaTarget(0)
-  };
-  
   // if node has been dragged, activate pin response
   if (event.active){
-    // Reset fixed position
-    d.fx = null;
-    d.fy = null;    
+    simulation.alphaTarget(0)
   };
 
+  // Reset fixed position
+  d.fx = null;
+  d.fy = null;    
 
-  // if d is selected, change color. 
-  if (d.fixed === true) {
-      d3.select(this)
-      .select("circle")
-      .style("fill", "#D72862")
-  }
+  // // if d is selected, change color. 
+  // if (d.fixed === true) {
+  //     d3.select(this)
+  //     .select("circle")
+  //     .style("fill", "#D72862")
+  // }
 };
 
 // export function clicked(event, d) {

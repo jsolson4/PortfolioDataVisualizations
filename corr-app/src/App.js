@@ -53,7 +53,7 @@ const CorrelationExplorer = () => {
 
         const drag = d3.drag()
           .on("start", (event, d) => ui.dragStart(event, d, simulation))
-          .on("drag", fx.dragged)
+          .on("drag", ui.drag)
           .on("end", ui.dragEnded);
 
         const textsAndNodes = svg.selectAll("g")
@@ -121,6 +121,9 @@ const CorrelationExplorer = () => {
             // circles to textAndNodes
             fx.resetNodeCorrelations(graphData, origNodes, d, circles, nodeScale, simulation, myHeading, defaultHeading);
           }
+          // DEV:add final sim reset (can delete...)
+          console.log("run force collide")
+          fx.updateForceCollide(simulation, nodeScale);
         }
 
       // // Set up interval to log simulation status
