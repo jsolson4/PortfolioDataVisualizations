@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import 'd3-force-boundary';
 import './ticker_styles.css';
 import * as fx from './functions';
-import * as ui from './user_interactions';
+import * as ui from './user_actions';
 
 
 console.log("test")
