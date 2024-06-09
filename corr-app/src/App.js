@@ -36,8 +36,8 @@ const CorrelationExplorer = () => {
         var origNodes = structuredClone(nodes);
         var graphData = { nodes:nodes, links:links };
 
-        console.log("graph data created:", graphData)
-        console.log("graph data links:", graphData.links)
+        //console.log("graph data created:", graphData)
+        //console.log("graph data links:", graphData.links)
         var nodeScale = d3.scaleLinear()
           .domain(d3.extent(graphData.links, d => Math.abs(d.correlation)))
           .range([8, 75]);
@@ -49,12 +49,12 @@ const CorrelationExplorer = () => {
           .force("charge", d3.forceManyBody().strength(4))
           .force("center", d3.forceCenter(width / 2, height / 2).strength(1))
           .force("collide", d3.forceCollide(d => nodeScale(Math.abs(d.Correlation))).strength(0.8))
-          .on("tick", ticked);
+          .on("tick", () => ticked(textsAndNodes));
 
         const drag = d3.drag()
           .on("start", (event, d) => ui.dragStart(event, d, simulation))
           .on("drag", ui.drag)
-          .on("end", ui.dragEnded);
+          .on("end", (event, d) => ui.dragEnded(event, d, simulation));
 
         const textsAndNodes = svg.selectAll("g")
           .data(graphData.nodes)
@@ -81,7 +81,7 @@ const CorrelationExplorer = () => {
           .attr("class", "text")
           .text(d => d.name);
 
-        function ticked() {
+        function ticked(textsAndNodes) {
           textsAndNodes.attr("transform", d => `translate(${d.x}, ${d.y})`);
         }
 
@@ -126,15 +126,15 @@ const CorrelationExplorer = () => {
           fx.updateForceCollide(simulation, nodeScale);
         }
 
-      // // Set up interval to log simulation status
-      // const interval = setInterval(() => {
+      // Set up interval to log simulation status
+      const interval = setInterval(() => {
         
-      //   //console.log("Simulation alpha:", simulation.alpha());
-      //   //console.log("Nodes positions:", graphData.nodes.map(node => ({ x: node.x, y: node.y })));
-      // }, 2000); // 2000 milliseconds = 2 seconds
+        console.log("Simulation alpha:", simulation.alpha());
+        console.log("Nodes positions:", graphData.nodes.map(node => ({ x: node.x, y: node.y })));
+      }, 2000); // 2000 milliseconds = 2 seconds
 
-      // // Clean up interval on component unmount
-      // return () => clearInterval(interval);
+      // Clean up interval on component unmount
+      return () => clearInterval(interval);
 
       }).catch(error => {
         console.error("Error loading file 2:", error);
