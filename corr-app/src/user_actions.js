@@ -13,7 +13,7 @@ export function dragStart(event, d, simulation) {
   
   // If the event is not active, fix the node's position
   if (!event.active) {
-    simulation.alphaTarget(0.3).restart();
+    simulation.alphaTarget(0.5).restart();
     console.log("drag started.", "event active:", event.active)
     d.fx = d.x;
     d.fy = d.y;
@@ -22,8 +22,10 @@ export function dragStart(event, d, simulation) {
 
 export function drag(event, d) {
   console.log("dragging")
-  d.fx = event.x;
-  d.fy = event.y;
+  console.log("event x, y:", event.x, ",", event.y)
+  d.x = event.x;
+  d.y = event.y;
+  console.log("d fx, fy:", d.fx, ",", d.fy)
   console.log("Dragging. event.active:", event.active);
 };
 
@@ -60,8 +62,8 @@ export function dragEnded(event, d, simulation) {
 
   // Reset fixed position
   d.fx = null;
-  d.fy = null;    
-
+  d.xy = null;    
+  console.log("Drag ended:", d);
   // // if d is selected, change color. 
   // if (d.fixed === true) {
   //     d3.select(this)

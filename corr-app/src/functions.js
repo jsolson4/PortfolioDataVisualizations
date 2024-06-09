@@ -78,7 +78,7 @@ export function updateForceCollide(simulation, nodeScale) {
     })
     .strength(0.8));
 
-    // add reset alpha
+    // restart the simulation to apply the changes
     simulation.alpha(1).restart();
 
 };
