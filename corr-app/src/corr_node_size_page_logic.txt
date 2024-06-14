@@ -1,0 +1,7 @@
+We will eventually want an automated way yo size the nodes so that they take
+up about 1/3rd of the space in their container ( I think that's what makes sense aesthetically).
+
+Logic:
+1) For each node, calculate the absolute sum of correlation values
+2) Select the combination with the highest sum
+3) The 
