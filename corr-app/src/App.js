@@ -10,7 +10,7 @@ const CorrelationExplorer = () => {
 
   useEffect(() => {
     const svg = d3.select("#graph-container");
-    const margin = { top: 20, right: 20, bottom: 30, left: 50 };
+    const margin = { top: 20, right: 20, bottom: 20, left: 20 };
     const width = +svg.attr("width") - margin.left - margin.right;
     const height = +svg.attr("height") - margin.top - margin.bottom;
     const myHeading = d3.select('#my-heading');
@@ -31,10 +31,7 @@ const CorrelationExplorer = () => {
           Correlation: +d.Correlation,
         }));
         var origNodes = structuredClone(nodes);
-        var graphData = { nodes:nodes, links:links };
-
-        //console.log("graph data created:", graphData)
-        //console.log("graph data links:", graphData.links)
+        var graphData = { nodes:nodes, links:links};
         var nodeScale = d3.scaleLinear()
           .domain(d3.extent(graphData.links, d => Math.abs(d.correlation)))
           .range([8, 75]);
@@ -43,8 +40,8 @@ const CorrelationExplorer = () => {
           .alpha(0.5)
           .alphaDecay(0.01) // Disable automatic alpha decay
           .alphaMin(0.1)  
-          .force("charge", d3.forceManyBody().strength(0.5))
-          .force("center", d3.forceCenter(width / 2, height / 2).strength(0.5))
+          .force("charge", d3.forceManyBody().strength(1))
+          .force("center", d3.forceCenter(width / 2, height / 2).strength(0.6))
           .force("collide", d3.forceCollide().radius(d => nodeScale(Math.abs(d.Correlation))).strength(0.8))
           .on("tick", () => fx.ticked(textsAndNodes));
 
@@ -63,8 +60,6 @@ const CorrelationExplorer = () => {
           })
           .on("mouseover", ui.mouseover)
           .on("mouseout", ui.mouseleave);
-
-          console.log("textsAndNodes:", textsAndNodes)
 
         const circles = textsAndNodes.append("circle")
           .attr("class", "node")
