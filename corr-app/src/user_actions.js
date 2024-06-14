@@ -3,6 +3,31 @@ import * as d3 from 'd3';
 import 'd3-force-boundary';
 import './ticker_styles.css';
 
+// define what happens on mouse over event
+// Mouseover event
+export function mouseover(event, d) {
+  console.log("mouseover");
+
+  // Get pointer position relative to the document
+  //const [mouseX, mouseY] = d3.pointer(event);
+  console.log(d.name, d.Correlation);
+
+  // Select and style the tooltip
+  d3.select("#tooltip")
+      .html(`Security: ${d.name}<br>Correlation: ${d.Correlation}`)
+      .style("left", `${d.x}px`) // Offset the tooltip slightly to the right of the cursor
+      .style("top", `${d.y + 10}px`) // Offset the tooltip slightly below the cursor
+      .classed("visible", true); // Add the visible class to show the tooltip
+}
+
+
+// Mouseleave event
+export function mouseleave(event, d) {
+  d3.select("#tooltip")
+    .classed("visible", false); // Remove the visible class to hide the tooltip
+}
+
+
 export function dragStart(event, d, simulation) {
   
   //console.log("simulation:", simulation)
