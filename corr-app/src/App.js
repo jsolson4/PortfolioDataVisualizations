@@ -73,22 +73,6 @@ const CorrelationExplorer = () => {
           .attr("class", "text")
           .text(d => d.name);
 
-      // Set up interval to log simulation status
-      // const interval = setInterval(() => {
-      //   console.log("Simulation alpha:", simulation.alpha());
-      //   graphData.nodes.forEach((node, i) => {
-          
-      //     if (node.name === 'SSSS'){
-      //     console.log(`Node ${node.name}: x=${node.x}, y=${node.y}, radius=${nodeScale(Math.abs(node.Correlation))}`);
-      //     }
-      //   });
-      //   //console.log("Nodes positions:", graphData.nodes.map(node => ({ x: node.x, y: node.y })));
-
-      // }, 5000); // 2000 milliseconds = 2 seconds
-
-      // Clean up interval on component unmount
-      // return () => clearInterval(interval);
-
       }).catch(error => {
         console.error("Error loading file 2:", error);
       });
