@@ -5,9 +5,6 @@ import './ticker_styles.css';
 import * as fx from './functions';
 import * as ui from './user_actions';
 
-
-console.log("test")
-
 const CorrelationExplorer = () => {
   const [correlation, setCorrelation] = useState(0.0);
 
@@ -46,10 +43,10 @@ const CorrelationExplorer = () => {
           .alpha(0.5)
           .alphaDecay(0.01) // Disable automatic alpha decay
           .alphaMin(0.1)  
-          .force("charge", d3.forceManyBody().strength(4))
-          .force("center", d3.forceCenter(width / 2, height / 2).strength(1))
-          .force("collide", d3.forceCollide(d => nodeScale(Math.abs(d.Correlation))).strength(0.8))
-          .on("tick", () => ticked(textsAndNodes));
+          .force("charge", d3.forceManyBody().strength(0.5))
+          .force("center", d3.forceCenter(width / 2, height / 2).strength(0.5))
+          .force("collide", d3.forceCollide().radius(d => nodeScale(Math.abs(d.Correlation))).strength(0.8))
+          .on("tick", () => fx.ticked(textsAndNodes));
 
         const drag = d3.drag()
           .on("start", (event, d) => ui.dragStart(event, d, simulation))
@@ -62,79 +59,40 @@ const CorrelationExplorer = () => {
           .append("g")
           .call(drag) 
           .on("click", function(event, d) {
-            clicked.call(this, d, origNodes, graphData, nodeScale, simulation, myHeading);
+            fx.clicked.call(this, d, origNodes, graphData, circles, nodeScale, simulation, myHeading, defaultHeading, svg);
           })
-          .on("mouseover", fx.mouseover)
-          .on("mouseout", fx.mouseleave);
+          .on("mouseover", ui.mouseover)
+          .on("mouseout", ui.mouseleave);
+
+          console.log("textsAndNodes:", textsAndNodes)
 
         const circles = textsAndNodes.append("circle")
           .attr("class", "node")
           .attr("r", d => nodeScale(Math.abs(d.Correlation)))
-          .attr("fill", d => d.Correlation < 0 ? "#A9A9A9" : "#327FB9");
-
-        // textsAndNodes.append("circle")
-        //   .attr("class", "node")
-        //   .attr("r", d => nodeScale(Math.abs(d.Correlation)))
-        //   .attr("fill", d => d.Correlation < 0 ? "#A9A9A9" : "#0C5E98");
+          .attr("fill", d => d.Correlation < 0 ? "#A9A9A9" : "#327FB9")
+          .on("mouseover", ui.mouseover) // ensure tooltip events are bound
+          .on("mouseout", ui.mouseleave) // ensure tooltip events are bound
+          ;
 
         textsAndNodes.append("text")
           .attr("class", "text")
           .text(d => d.name);
 
-        function ticked(textsAndNodes) {
-          textsAndNodes.attr("transform", d => `translate(${d.x}, ${d.y})`);
-        }
-
-        function clicked(d, origNodes, graphData, nodeScale, simulation, myHeading) {
-
-          const circle = d3.select(this).select("circle");
-          const text = d3.select(this).select("text");
-
-          const selectedNode = d3.selectAll("circle.selectedNode");
-          const selectedText = d3.selectAll("text.selectedText");
-
-          circle.attr("class", "selectedNode");
-          text.attr("class", "selectedText");
-
-          myHeading.text(`Correlations to ${d.name}`);
-          
-          if (circle.size() === 1 && selectedNode.size() === 0) {
-            console.log("start resize")
-            // circles to textsAndNodes
-            fx.updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nodeScale, simulation);
-          }
-
-          if (selectedNode.size() === 1) {
-            selectedNode.attr("class", "node");
-            selectedText.attr("class", "text");
-          }
-
-          const selectedNodeEndState = d3.selectAll("circle.selectedNode");
-
-          if (circle.size() === 1 && selectedNode.size() === 1 && selectedNodeEndState.size() === 1) {
-            // circles to textAndNodes
-            fx.updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nodeScale, simulation);
-          }
-
-          if (selectedNodeEndState.size() === 0) {
-            myHeading.text(defaultHeading);
-            // circles to textAndNodes
-            fx.resetNodeCorrelations(graphData, origNodes, d, circles, nodeScale, simulation, myHeading, defaultHeading);
-          }
-          // DEV:add final sim reset (can delete...)
-          console.log("run force collide")
-          fx.updateForceCollide(simulation, nodeScale);
-        }
-
       // Set up interval to log simulation status
-      const interval = setInterval(() => {
-        
-        console.log("Simulation alpha:", simulation.alpha());
-        console.log("Nodes positions:", graphData.nodes.map(node => ({ x: node.x, y: node.y })));
-      }, 2000); // 2000 milliseconds = 2 seconds
+      // const interval = setInterval(() => {
+      //   console.log("Simulation alpha:", simulation.alpha());
+      //   graphData.nodes.forEach((node, i) => {
+          
+      //     if (node.name === 'SSSS'){
+      //     console.log(`Node ${node.name}: x=${node.x}, y=${node.y}, radius=${nodeScale(Math.abs(node.Correlation))}`);
+      //     }
+      //   });
+      //   //console.log("Nodes positions:", graphData.nodes.map(node => ({ x: node.x, y: node.y })));
+
+      // }, 5000); // 2000 milliseconds = 2 seconds
 
       // Clean up interval on component unmount
-      return () => clearInterval(interval);
+      // return () => clearInterval(interval);
 
       }).catch(error => {
         console.error("Error loading file 2:", error);
