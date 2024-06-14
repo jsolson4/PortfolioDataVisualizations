@@ -28,19 +28,31 @@
     text-anchor: middle;
   }
 
+/* General Styles */
+  body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif; /* Use a modern font */
+    color: #FFFFFF; /* Use a light font color */
+    background-color: #333333; /* Dark background color for contrast */
+}
+
 /* Define styles for the left column */
 .left-column {
-    width: 20%; /* Set the width to occupy 25% of the page */
+    width: 20%; /* Set the width to occupy 20% of the page */
     height: 100vh; /* Make the column full height of the viewport */
     position: fixed; /* Fix the position of the column */
     top: 0; /* Align to the top of the viewport */
     left: 0; /* Align to the left of the viewport */
-    background-color:#0C5E98;
-    display: inline-block;
+    background-color: #0C5E98; /* Use a modern blue color */
+    display: flex; /* Use flexbox for alignment */
+    flex-direction: column; /* Align items vertically */
+    justify-content: top; /* Center content vertically */
+    padding: 20px; /* Add padding for inner spacing */
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* Add a subtle shadow */
 }
 
 .left-column-content {
-    margin-left:20
+    margin-left:20%
 }
 
 .right-column {
@@ -100,3 +112,56 @@
     padding: 20px; /* Add some padding for content */
 /*}
  */
+
+
+/* new additions */
+
+/* Style for the SVG container */
+#graph-container {
+    width: 100%; /* Make SVG container full width */
+    height: 70%; /* Adjust height as needed */
+    border: none; /* Remove border */
+    margin: 0 auto; /* Center the SVG container */
+}
+
+/* Style for the slider container */
+.slidecontainer {
+    width: 80%; /* Adjust the width as needed */
+    margin: 0 auto; /* Center the slider container */
+}
+
+/* Style for the slider */
+.slider {
+    width: 100%; /* Make the slider full width */
+    appearance: none; /* Remove default appearance */
+    height: 15px; /* Set the height */
+    border-radius: 5px; /* Rounded corners */
+    background: white; /* Slider background color */
+    outline: solid; /* Remove outline */
+    opacity: 0.9; /* Slight transparency */
+    transition: opacity 0.2s; /* Smooth transition for opacity */
+}
+
+.slider:hover {
+    opacity: 1; /* Full opacity on hover */
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+    .left-column, .right-column {
+        width: 100%;
+        height: auto;
+        position: static;
+        flex-direction: row;
+        box-shadow: none;
+    }
+
+    .left-column {
+        flex-direction: row;
+        justify-content: space-around;
+    }
+
+    .right-column {
+        padding: 10px;
+    }
+}
