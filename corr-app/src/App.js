@@ -3,9 +3,31 @@ import * as d3 from 'd3';
 import 'd3-force-boundary';
 import './ticker_styles.css';
 import * as fx from './functions';
-import * as ui from './user_actions';
+import * as ux from './user_actions';
+import TimeRangeSelector from './components/TimeRangeSelector';
+import ReactSlider from 'react-slider';
+import RangeSlider from './components/RangeSlider';
 
 const CorrelationExplorer = () => {
+
+  
+
+  // add time range selector
+  const [timeRange, setTimeRange] = useState('3');
+  const handleTimeRangeSelect = (range) => {
+    console.log('Selected time range: ${range} months')
+    setTimeRange(range);
+  }
+
+  // correlation value filter
+  const [range, setRange] = useState([-1, 1]);
+  const handleRangeChange = (newRange) => {
+    console.log(`Selected range: ${newRange[0]} - ${newRange[1]} months`);
+    setRange(newRange);
+  };
+    // Handle the selected range (e.g., update a chart or fetch data)
+
+
   const [correlation, setCorrelation] = useState(0.0);
 
   useEffect(() => {
@@ -41,14 +63,14 @@ const CorrelationExplorer = () => {
           .alphaDecay(0.01) // Disable automatic alpha decay
           .alphaMin(0.1)  
           .force("charge", d3.forceManyBody().strength(1))
-          .force("center", d3.forceCenter(width / 2, height / 2).strength(0.6))
+          .force("center", d3.forceCenter(width / 2, height / 2).strength(1))
           .force("collide", d3.forceCollide().radius(d => nodeScale(Math.abs(d.Correlation))).strength(0.8))
           .on("tick", () => fx.ticked(textsAndNodes));
 
         const drag = d3.drag()
-          .on("start", (event, d) => ui.dragStart(event, d, simulation))
-          .on("drag", ui.drag)
-          .on("end", (event, d) => ui.dragEnded(event, d, simulation));
+          .on("start", (event, d) => ux.dragStart(event, d, simulation))
+          .on("drag", ux.drag)
+          .on("end", (event, d) => ux.dragEnded(event, d, simulation));
 
         const textsAndNodes = svg.selectAll("g")
           .data(graphData.nodes)
@@ -58,15 +80,15 @@ const CorrelationExplorer = () => {
           .on("click", function(event, d) {
             fx.clicked.call(this, d, origNodes, graphData, circles, nodeScale, simulation, myHeading, defaultHeading, svg);
           })
-          .on("mouseover", ui.mouseover)
-          .on("mouseout", ui.mouseleave);
+          .on("mouseover", ux.mouseover)
+          .on("mouseout", ux.mouseleave);
 
         const circles = textsAndNodes.append("circle")
           .attr("class", "node")
           .attr("r", d => nodeScale(Math.abs(d.Correlation)))
           .attr("fill", d => d.Correlation < 0 ? "#A9A9A9" : "#327FB9")
-          .on("mouseover", ui.mouseover) // ensure tooltip events are bound
-          .on("mouseout", ui.mouseleave) // ensure tooltip events are bound
+          .on("mouseover", ux.mouseover) // ensure tooltip events are bound
+          .on("mouseout", ux.mouseleave) // ensure tooltip events are bound
           ;
 
         textsAndNodes.append("text")
@@ -86,11 +108,17 @@ const CorrelationExplorer = () => {
       <div className="left-column">
         <div className="left-column-content">
           <h2>Correlation Explorer</h2>
-          <div className="slidecontainer">
+          
+          <TimeRangeSelector onSelectTimeRange={handleTimeRangeSelect} />
+          <div>
+          <RangeSlider min={-1} max={1} step={0.01}
+            onRangeChange={handleRangeChange}/>
+</div>
+          {/* <div className="slidecontainer">
             <input type="range" min="0" max="1" value={correlation} step="0.01" className="slider" id="corrRange" 
               onChange={(e) => setCorrelation(e.target.value)} />
             <p>Min. Correlation: <span id="corrMinValue">{correlation}</span></p>
-          </div>
+          </div> */}
         </div>
       </div>
       <div className="right-column">
