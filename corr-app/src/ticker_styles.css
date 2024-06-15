@@ -47,12 +47,12 @@
     display: flex; /* Use flexbox for alignment */
     flex-direction: column; /* Align items vertically */
     justify-content: top; /* Center content vertically */
-    padding: 20px; /* Add padding for inner spacing */
+    padding: 10px; /* Add padding for inner spacing */
     box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* Add a subtle shadow */
 }
 
 .left-column-content {
-    margin-left:20%
+    margin-left:5%
 }
 
 .right-column {
@@ -68,7 +68,6 @@
     
 
 }
-
 
 .tooltip {
     position: absolute;
@@ -119,14 +118,14 @@
 /* Style for the SVG container */
 #graph-container {
     width: 100%; /* Make SVG container full width */
-    height: 70%; /* Adjust height as needed */
+    height: 90%; /* Adjust height as needed */
     border: none; /* Remove border */
     margin: 0 auto; /* Center the SVG container */
 }
 
 /* Style for the slider container */
 .slidecontainer {
-    width: 80%; /* Adjust the width as needed */
+    width: 5%; /* Adjust the width as needed */
     margin: 0 auto; /* Center the slider container */
 }
 
@@ -135,8 +134,9 @@
     width: 100%; /* Make the slider full width */
     appearance: none; /* Remove default appearance */
     height: 15px; /* Set the height */
-    border-radius: 5px; /* Rounded corners */
-    background: white; /* Slider background color */
+    border-color:green;
+    border-radius: 15px; /* Rounded corners */
+    background: #0C5E98; /* Slider background color */
     outline: solid; /* Remove outline */
     opacity: 0.9; /* Slight transparency */
     transition: opacity 0.2s; /* Smooth transition for opacity */
@@ -145,6 +145,7 @@
 .slider:hover {
     opacity: 1; /* Full opacity on hover */
 }
+
 
 /* Media queries for responsiveness */
 @media (max-width: 768px) {
