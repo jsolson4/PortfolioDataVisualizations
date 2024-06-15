@@ -1,0 +1,9 @@
+.column-header {
+    width: 100%;
+    background-color: #0C5E98; /* Or any color you prefer */
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    font-size: 1.5rem;
+  }
+  
