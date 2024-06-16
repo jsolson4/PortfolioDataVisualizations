@@ -1,0 +1,39 @@
+
+/* Container styling */
+.time-selector-container {
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 200px;
+  }
+  
+  /* Label styling */
+.time-selector-container .time-selector-label {
+    margin-right: 10px;
+    font-size: 12px;
+    /*color: #333;*/
+    color:black
+  }
+  
+  /* Select dropdown styling */
+  .time-selector-container .time-selector-select {
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    font-size: 12px;
+    color: #333;
+  }
+  
+  /* Focus state for select dropdown */
+  .time-selector-container .time-selector-select:focus {
+    border-color: #0C5E98; /* Change to match your app's primary color */
+    outline: none;
+    box-shadow: 0 0 5px rgba(12, 94, 152, 0.5); /* Add a subtle shadow for focus state */
+  }
+  

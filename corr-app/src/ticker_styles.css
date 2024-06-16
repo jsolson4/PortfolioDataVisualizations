@@ -38,7 +38,7 @@
 
 /* Define styles for the left column */
 .left-column {
-    width: 20%; /* Set the width to occupy 20% of the page */
+    width: 25%; /* Set the width to occupy 20% of the page */
     height: 100vh; /* Make the column full height of the viewport */
     position: fixed; /* Fix the position of the column */
     top: 0; /* Align to the top of the viewport */
@@ -91,28 +91,6 @@
     transform: translateY(0); /* Move tooltip into position */
 }
 
-
-/*
-.tooltip {
-    position: absolute;
-    font-family: Arial;
-    font-size: 9px;
-    background-color: white;
-    border: 2px solid black;
-    padding: 5px;
-    border-radius: 5px;
-    pointer-events: none;
-    opacity: 0;
-}
-*/
-
-/* Additional styling for content within the left column */
-/* .left-column-content {
-    padding: 20px; /* Add some padding for content */
-/*}
- */
-
-
 /* new additions */
 
 /* Style for the SVG container */
@@ -123,28 +101,6 @@
     margin: 0 auto; /* Center the SVG container */
 }
 
-/* Style for the slider container */
-.slidecontainer {
-    width: 5%; /* Adjust the width as needed */
-    margin: 0 auto; /* Center the slider container */
-}
-
-/* Style for the slider */
-.slider {
-    width: 100%; /* Make the slider full width */
-    appearance: none; /* Remove default appearance */
-    height: 15px; /* Set the height */
-    border-color:green;
-    border-radius: 15px; /* Rounded corners */
-    background: #0C5E98; /* Slider background color */
-    outline: solid; /* Remove outline */
-    opacity: 0.9; /* Slight transparency */
-    transition: opacity 0.2s; /* Smooth transition for opacity */
-}
-
-.slider:hover {
-    opacity: 1; /* Full opacity on hover */
-}
 
 
 /* Media queries for responsiveness */

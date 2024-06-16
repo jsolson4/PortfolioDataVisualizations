@@ -1,11 +1,13 @@
 .range-slider {
     width: 150px;
-    margin: 20px auto;
+    margin: 25px auto;
+    max-width: 200px;
+    margin-left:30px;
   }
   
 .horizontal-slider {
   width: 100%;
-  height: 25px;
+  height: 35px;
 }
 
 .example-thumb {
