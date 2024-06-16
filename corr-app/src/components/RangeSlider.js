@@ -11,7 +11,7 @@ const RangeSlider = ({ min, max, step, onRangeChange }) => {
   };
 
   return (
-    <div className="range-slider">
+    <div className="range-slider-container">
       <ReactSlider
         className="horizontal-slider"
         thumbClassName="example-thumb"
@@ -22,15 +22,16 @@ const RangeSlider = ({ min, max, step, onRangeChange }) => {
         value={range}
         onChange={handleSliderChange}
         renderTrack={(props, state) => {
-            return (
-              <div
-                {...props}
-                className={
-                    state.index === 0 ? 'example-track example-track-0' : 'example-track example-track-1'
-                }
-              />
-            );
-          }}
+          let trackClassName;
+          if (state.index === 0) {
+            trackClassName = 'example-track example-track-0';
+          } else if (state.index === 1) {
+            trackClassName = 'example-track example-track-1';
+          } else {
+            trackClassName = 'example-track';
+          }
+          return <div {...props} className={trackClassName} />;
+        }}
       />
       <div className="range-values">
         <span>Min: {range[0]}</span>
