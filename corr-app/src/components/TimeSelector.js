@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import './TimeSelector.css';
 
-const TimeRangeSelector = ({ onSelectTimeRange }) => {
+const TimeSelector = ({ onSelectTimeRange }) => {
   const [selectedRange, setSelectedRange] = useState('3');
 
   const handleSelectChange = (event) => {
@@ -10,8 +11,8 @@ const TimeRangeSelector = ({ onSelectTimeRange }) => {
   };
 
   return (
-    <div style={styles.container}>
-      <label htmlFor="timeRange" style={styles.label}>Select Time Range:</label>
+    <div className="time-selector-container">
+      <label htmlFor="timeRange" className="time-selector-label">Select Time Range:</label>
       <select
         id="timeRange"
         value={selectedRange}
@@ -46,4 +47,4 @@ const styles = {
   },
 };
 
-export default TimeRangeSelector;
+export default TimeSelector;
