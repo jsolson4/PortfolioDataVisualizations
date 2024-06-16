@@ -4,17 +4,15 @@ import 'd3-force-boundary';
 import './ticker_styles.css';
 import * as fx from './functions';
 import * as ux from './user_actions';
-import TimeRangeSelector from './components/TimeRangeSelector';
+import TimeSelector from './components/TimeSelector';
 import ReactSlider from 'react-slider';
 import RangeSlider from './components/RangeSlider';
 
 const CorrelationExplorer = () => {
 
-  
-
   // add time range selector
   const [timeRange, setTimeRange] = useState('3');
-  const handleTimeRangeSelect = (range) => {
+  const handleTimeSelect = (range) => {
     console.log('Selected time range: ${range} months')
     setTimeRange(range);
   }
@@ -25,9 +23,8 @@ const CorrelationExplorer = () => {
     console.log(`Selected range: ${newRange[0]} - ${newRange[1]} months`);
     setRange(newRange);
   };
-    // Handle the selected range (e.g., update a chart or fetch data)
-
-
+  
+  // Handle the selected range (e.g., update a chart or fetch data)
   const [correlation, setCorrelation] = useState(0.0);
 
   useEffect(() => {
@@ -109,7 +106,7 @@ const CorrelationExplorer = () => {
         <div className="left-column-content">
           <h2>Correlation Explorer</h2>
           
-          <TimeRangeSelector onSelectTimeRange={handleTimeRangeSelect} />
+          <TimeSelector onSelectTimeRange={handleTimeSelect} />
           <div>
           <RangeSlider min={-1} max={1} step={0.01}
             onRangeChange={handleRangeChange}/>
