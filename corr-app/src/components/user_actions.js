@@ -1,7 +1,7 @@
 
 import * as d3 from 'd3';
 import 'd3-force-boundary';
-import './ticker_styles.css';
+//import './ticker_styles.css';
 
 // define what happens on mouse over event
 // Mouseover event

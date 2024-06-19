@@ -1,11 +1,9 @@
 
 
 import * as d3 from 'd3';
-import './ticker_styles.css';
+//import './ticker_styles.css';
 
 // Three function that change the tooltip when user hover / move / leave a cell
-
-
 
 
 // function to calculate the node radius
