@@ -83,6 +83,9 @@ export function restartSimulation(simulation){
 
 // create function to convert nodes to their original values on 'unclick'
 export function resetNodeCorrelations(graphData, origNodes, d, circles, nodeScale, simulation){
+    
+    console.log("resetNodeCorrelations")
+
     // for each circle svg...
     circles.each(function(d) {
         
@@ -136,6 +139,9 @@ export function updateNodeCorr(nodes, nodeName, newCorr){
 export function updateNodeRadiusToLinkCorr(d, circles, origNodes, graphData, nodeScale, simulation) { // updateNodeRadii
 
     // get all relevant links
+    console.log("begin updateNodeRadiusToLinkCorr")
+    console.log("d:", d)
+    console.log("circles:", circles)
     console.log("graphData:", graphData)
     const relevantLinks = graphData.links.filter(link => link.source === d.name)
 
